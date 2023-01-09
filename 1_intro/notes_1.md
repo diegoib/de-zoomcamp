@@ -8,7 +8,7 @@
 
 This is the architecture to work along in the course.
 
-![architecture diagram](/../images/01_01_arch.jpg)
+![architecture diagram](../images/01_01_arch.jpg)
 
 
 ## 2. GCP
@@ -20,7 +20,7 @@ GCP generally works in terms of projects. You can create a new project or use an
 Docker delivers software in packages called containers, and containers are isoletd from one another.
 A data pipeline is the process / service that gets in data and produces more data.
 
-![data pipeline](/../images/01_02_datapipeline.png)
+![data pipeline](../images/01_02_datapipeline.png)
 
 Whys should we care about docker?
 - Local experiments
