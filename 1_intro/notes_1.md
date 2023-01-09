@@ -17,6 +17,8 @@ Google Cloud Platform (GCP) is a combination of cloud computing services offered
 GCP generally works in terms of projects. You can create a new project or use and existing one which comes as default.
 
 ## 3. Docker + Postgres
+
+### Docker basic concepts
 Docker delivers software in packages called containers, and containers are isoletd from one another.
 A data pipeline is the process / service that gets in data and produces more data.
 
@@ -44,8 +46,20 @@ If we want to import pandas in a container with that image, it has not pandas in
 docker run -it --entrypoint=bash python:3.9
 pip install pandas
 ```
+Let's create a dummy `pipeline.py` python file, that takes in one argument and prints it:
 
-If we wan to omit this step and create an image with python 3.9 and pandas, we can do it through a dockerfile.
+```python
+import pandas as pd
+import sys
+
+print(sys.argv)
+
+day = sys.argv[1]
+
+print(f'job finished successfully for day = {day}')
+```
+
+Now, let's put it into a container. This container is going to have a python 3.9 layer, pandas, we can do it through a `dockerfile`.
 
 ```dockerfile
 FROM python:3.9
@@ -63,7 +77,9 @@ To convert the dockerfile into an image, in the shell we run:
 ```bash
 docker build -t test:pandas .
 ```
-And then run it with
+* The image name will be `test` and the tag `pandas`. if we don't specify a tag, the default is `latest`.
+
+And then run it with:
 
 ```bash
 docker run -it test:pandas 2023-01-01
