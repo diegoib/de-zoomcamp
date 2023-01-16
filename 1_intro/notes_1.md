@@ -24,7 +24,7 @@ A data pipeline is the process / service that gets in data and produces more dat
 
 ![data pipeline](../images/01_02_datapipeline.png)
 
-Whys should we care about docker?
+Why should we care about docker?
 - Local experiments
 - Integration tests (CI/CD)
 - Reproducibility
@@ -32,7 +32,7 @@ Whys should we care about docker?
 - Spark
 - Serverless (AWS Lambda, Google functions)
 
-(To use Linux on Windows, we can use MINGW. It comes with Git when it is installed in Windows)
+* To use Linux on Windows, we can use `MINGW`. It comes with Git when it is installed in Windows.
 
 After downloading Docker, to run a container, just type:
 
@@ -84,3 +84,50 @@ And then run it with:
 ```bash
 docker run -it test:pandas 2023-01-01
 ```
+
+### Running Postgres in a container
+
+```bash
+docker run -it \
+    -e POSTGRES_USER="root" \ # to run environmental variables
+    -e POSTGRES_PASSWORD="root" \
+    -e POSTGRES_DB="ny_taxi" \
+    -v $(pwd)/ny_taxi_postgres_data:/var/lib/postgresql/data \ # host_folder:container_folder
+    -p 5432:5432 \ # host_port:container_port
+    postgres:13
+```
+* enviromental variables: they can be set for the container
+* volumes: a way to map folders of the host machine to a folder in the container. As Postgres is a database, we need to keep the files in a file system to save records...
+
+Let's run a cli client for accesing the database. For that purpouse, we are going to use `pgcli`, and can be install with `pip`:
+
+```bash
+pip install pgcli
+```
+
+After installing it, we can access the postgres database in the container that is up with:
+
+```
+pgcli -h localhost -p 5432 -u root -d ny_taxi
+```
+* `h` is the host. As we are running it locally we can use `localhost`
+* `p` is the port
+* `u` is the username
+* `d` is the database we want to access
+
+We will need to introduce the password that we set when running the container.
+
+Postgres commands:
+* `\dt` to show the tables in the database
+* `\d table_name` to describe the table columns and types
+
+### Ingesting data into Postgres
+
+To populate the database, we are going to download data from the [New York taxi data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page):
+
+```bash
+wget https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet
+```
+As the code follows along the old data files in `csv` format (now they are in `parquet` format), we can download them from the **DataTalksClub github repo** in this [link](https://github.com/DataTalksClub/nyc-tlc-data).
+
+The code for ingesting the Postgres database with the downloaded data is in [`upload-data.ipynb`](src/upload-data.ipynb).
