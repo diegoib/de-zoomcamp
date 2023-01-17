@@ -4,6 +4,12 @@
 - [Architecture](#architecture) 
 - [GCP](#gcp)
 - [Docker and Postgres](#docker-and-postgres)
+    - [Docker basic concepts](#docker-basic-concepts)
+    - [Running Postgres in a container](#running-Postgres-in-a-container)
+    - [Ingesting data into Postgres](#ingesting-data-into-postgres)
+    - [Connecting pgAdmin and Postgres](#connecting-pgadmin-and-postgres)
+    - [Dockerizing the Ingestion Script](#dockerizing-the-ingestion-script)
+    - [Using Docker Compose](#using-docker-compose)
 
 
 ## Architecture
@@ -248,7 +254,7 @@ docker run -it \
 In this way, when we run the container, we are running the script (as it is declared in the dockerfile that the entrypoint is **["python", "ingest_data.py"]**). Once the script finishes, the container will stop.
 
 
-## Using Docker Compose
+### Using Docker Compose
 [`Docker Compose`](https://docs.docker.com/compose/) is a tool for defining and running multiple containers at the same time. With this tool we can run at the same time all the containers that we want, preventign to have to run each container at a time from the command line.  
 First, we need to download and install the tool. Then we need to create a docker-compose file where we specify the containers and specifications we need to run. The file needs to be called `docker-compose.yaml`, and its format is `yaml`. We don't need to specify a **network** as docker compose will take care of that.
 Some **Docker Compose** commands:
@@ -258,7 +264,7 @@ Some **Docker Compose** commands:
 * `docker-compose down` stop the containers
 
 The `docker compose file` is like:
-```dockerfile
+```yaml
 services:
  # name of the container 1
  pgdatabase: # name of the container
