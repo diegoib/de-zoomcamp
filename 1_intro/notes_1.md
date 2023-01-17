@@ -63,7 +63,7 @@ day = sys.argv[1]
 print(f'job finished successfully for day = {day}')
 ```
 
-Now, let's put it into a container. This container is going to have a python 3.9 layer, pandas, we can do it through a `dockerfile`.
+Now, let's put it into a container. This container is going to have a python 3.9 layer, pandas, we can do it through a `dockerfile`. A dockerfile is a file that specifies what is going to be inside the container. It needs be called dockerfile.
 
 ```dockerfile
 FROM python:3.9
@@ -246,3 +246,41 @@ docker run -it \
 ```
 
 In this way, when we run the container, we are running the script (as it is declared in the dockerfile that the entrypoint is **["python", "ingest_data.py"]**). Once the script finishes, the container will stop.
+
+
+## Using Docker Compose
+[`Docker Compose`](https://docs.docker.com/compose/) is a tool for defining and running multiple containers at the same time. With this tool we can run at the same time all the containers that we want, preventign to have to run each container at a time from the command line.  
+First, we need to download and install the tool. Then we need to create a docker-compose file where we specify the containers and specifications we need to run. The file needs to be called `docker-compose.yaml`, and its format is `yaml`. We don't need to specify a **network** as docker compose will take care of that.
+Some **Docker Compose** commands:
+* `docker-compose` shows all different commands we can run
+* `docker-compose up` will run the containers specify in the docker-compose.yaml file of the working directory
+    * `docker-compose up -d` run in detached mode
+* `docker-compose down` stop the containers
+
+The `docker compose file` is like:
+```dockerfile
+services:
+ # name of the container 1
+ pgdatabase: # name of the container
+   # image we are using
+   image: postgres:13
+   # environment variables we need to run
+   environment:
+     - POSTGRES_USER=root 
+     - POSTGRES_PASSWORD=root 
+     - POSTGRES_DB=ny_taxi
+   # to persist data on the host machine
+   volumes:
+     - $ ../../ny_taxi_postgres_data:/var/lib/postgresql/data
+   # port mapping
+   ports:
+     - 5432:5432
+ # name of the container 2 ...
+ pgadmin:
+   image: dpage/pgadmin4
+   environment:
+     - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+     - PGADMIN_DEFAULT_PASSWORD=root
+   ports:
+     - 8080:80
+```
