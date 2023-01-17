@@ -1,22 +1,26 @@
 # Basics and Setup
 
 ## Table of contents
-- Architecture
-- GCP + Postgres
+- [Architecture](#architecture) 
+- [GCP](#gcp)
+- [Docker and Postgres](#docker-and-postgres)
 
-## 1. Architecture
+
+## Architecture
 
 This is the architecture to work along in the course.
 
 ![architecture diagram](../images/01_01_arch.jpg)
 
 
-## 2. GCP
+
+## GCP
 Google Cloud Platform (GCP) is a combination of cloud computing services offered by Google. It includes a range of hosted services for compute, sotrage and application development that run on Google hardware. Some of the topics of these services are: Compute, Management, Networking, Storage & Databases, Big Data, Identity & Security, and Machine Learning.
 
 GCP generally works in terms of projects. You can create a new project or use and existing one which comes as default.
 
-## 3. Docker + Postgres
+
+## Docker and Postgres
 
 ### Docker basic concepts
 Docker delivers software in packages called containers, and containers are isoletd from one another.
@@ -85,6 +89,7 @@ And then run it with:
 docker run -it test:pandas 2023-01-01
 ```
 
+
 ### Running Postgres in a container
 
 ```bash
@@ -99,7 +104,7 @@ docker run -it \
 * enviromental variables: they can be set for the container
 * volumes: a way to map folders of the host machine to a folder in the container. As Postgres is a database, we need to keep the files in a file system to save records...
 
-Let's run a cli client for accesing the database. For that purpouse, we are going to use `pgcli`, and can be install with `pip`:
+Let's run a cli client, from our computer (not from inside the container) for accesing the database. For that purpouse, we are going to use `pgcli`, and can be install with `pip`:
 
 ```bash
 pip install pgcli
@@ -121,6 +126,7 @@ Postgres commands:
 * `\dt` to show the tables in the database
 * `\d table_name` to describe the table columns and types
 
+
 ### Ingesting data into Postgres
 
 To populate the database, we are going to download data from the [New York taxi data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page):
@@ -128,6 +134,115 @@ To populate the database, we are going to download data from the [New York taxi 
 ```bash
 wget https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet
 ```
+
 As the code follows along the old data files in `csv` format (now they are in `parquet` format), we can download them from the **DataTalksClub github repo** in this [link](https://github.com/DataTalksClub/nyc-tlc-data).
 
 The code for ingesting the Postgres database with the downloaded data is in [`upload-data.ipynb`](src/upload-data.ipynb).
+
+
+### Connecting pgAdmin and Postgres
+
+There is a more convinient way of writng queries to the database rather than using `pgcli`. There is another tool with a graphical user inteface, [`pgAdmin`](https://www.pgadmin.org/). We can install it, but since we are using docker, we can make it simpler and run it in a container. We can run it with:
+
+```bash
+docker run -it \
+    -e PGADMIN_DEFAULT_EMAIL="admin@admin.com" \ # User name
+    -e PGADMIN_DEFAULT_PASSWORD="root" \ # User password
+    -p 8080:80 \ # Host port : Container port, we dont use host port 80 to avoid conflicts
+    dpage/pgadmin4
+```
+Now, we can access pgAdmin through the web broser by typing: `localhost:8080`
+If we try to connect to the postgres database we are running in another container, we have to specify the host machine. If we specify "localhost", **pgAdmin** is going to look inside its container, so won't be able to find **postgres**. That is because we need to create a `network` in docker to make available 2 containers to interact between them. 
+
+To create a **docker network** we can run:
+
+```bash
+docker network create pg-network # pg-network is the name of the network we are creating
+```
+
+And then run the docker container specifying the name of the network we want to use, and the name that the container is going to have inside the network. This last name is the one we are going to use to refer to the container when we connect two or more containers. 
+
+```bash
+docker run -it \
+    -e POSTGRES_USER="root" \
+    -e POSTGRES_PASSWORD="root" \
+    -e POSTGRES_DB="ny_taxi" \
+    -v $(pwd)/ny_taxi_postgres_data:/var/lib/postgresql/data \
+    -p 5432:5432 \
+    --network=pg-network \
+    --name pg-database \
+    postgres:13
+
+docker run -it \
+    -e PGADMIN_DEFAULT_EMAIL="admin@admin.com" \
+    -e PGADMIN_DEFAULT_PASSWORD="root" \
+    -p 8080:80 \
+    --network=pg-network \
+    --name pgadmin \
+    dpage/pgadmin4
+```
+
+Once we are inide **pgAdmin**, to connect to the postgres database, we make right click in _Server_ > _Register_ > _Server..._ 
+
+![steps](../images/01_03_pgadmin.png)
+
+
+### Dockerizing the Ingestion Script
+
+Next, we will convert the later jupyter notebook into a script. So with that we can put it inside a container and run it.  
+To export the notebook into a script, we can use the `nbconvert` functionality of jupyter:
+
+```bash
+jupyter nbconvert --to=script ipload-data-ipynb
+```
+
+We clean the output script and add a few new lines of code. We are going to use the library [`argparse`](https://docs.python.org/es/3/library/argparse.html). The complete script can be found in [this link](src/ingest_data.py).
+
+To execute the script, we can run:
+
+```bash
+python ingest_data.py \
+    --user=root \
+    --password=root \
+    --host=localhost \
+    --port=5432 \
+    --db=ny_taxi \
+    --table_name=yellow_taxi_data \
+    --url="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz" 
+```
+
+But, it is better if we put it inside a docker container. For that we need to create a `dockerfile`.
+
+```dockerfile
+FROM python:3.9
+
+RUN apt-get install wget
+RUN pip install pandas sqlalchemy psycopg2
+
+WORKDIR /app
+COPY ingest_data.py ingest_data.py
+
+ENTRYPOINT ["python", "ingest_data.py"]
+```
+
+And build it with:
+
+```bash
+docker build -t taxi_ingest:v001 .
+```
+To run the container created, and taking as input the same parameters, we can run with `docker run`. We have to be aware to specify the network created and the host name:
+
+```bash
+docker run -it \
+    --network=pg-network \
+    taxi_ingest:v001 \
+    --user=root \
+    --password=root \
+    --host=pg-database \
+    --port=5432 \
+    --db=ny_taxi \
+    --table_name=yellow_taxi_data \
+    --url="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz" 
+```
+
+In this way, when we run the container, we are running the script (as it is declared in the dockerfile that the entrypoint is **["python", "ingest_data.py"]**). Once the script finishes, the container will stop.
