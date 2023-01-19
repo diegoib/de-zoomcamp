@@ -19,13 +19,6 @@ This is the architecture to work along in the course.
 ![architecture diagram](../images/01_01_arch.jpg)
 
 
-
-## GCP
-Google Cloud Platform (GCP) is a combination of cloud computing services offered by Google. It includes a range of hosted services for compute, sotrage and application development that run on Google hardware. Some of the topics of these services are: Compute, Management, Networking, Storage & Databases, Big Data, Identity & Security, and Machine Learning.
-
-GCP generally works in terms of projects. You can create a new project or use and existing one which comes as default.
-
-
 ## Docker and Postgres
 
 ### Docker basic concepts
@@ -290,3 +283,30 @@ services:
    ports:
      - 8080:80
 ```
+
+## GCP and Terraform
+
+### Google Cloud Platform
+Google Cloud Platform (GCP) is a combination of cloud computing services offered by Google. It includes a range of hosted services for compute, sotrage and application development that run on Google hardware. Some of the topics of these services are: Compute, Management, Networking, Storage & Databases, Big Data, Identity & Security, and Machine Learning.
+
+GCP generally works in terms of projects. You can create a new project or use and existing one which comes as default.
+
+### Terraform
+[Terraform](https://www.terraform.io/) is an open source tool by HashiCorp, taht lets provision infrastructure resources with declarative configuration files. These resources can be VMs, containers, storage... Terraform uses an IaC ([Infrasturcture-as-Code](https://www.wikiwand.com/en/Infrastructure_as_code)) approach, which supports devops best practices for change management. It is like a git version control for infrastructure.
+
+### Local Setup for Terraform and GCP
+- Terraform: [Installation](https://developer.hashicorp.com/terraform/downloads?product_intent=terraform)
+- GCP: steps
+
+  1. Create a *project*, everything in GCP works inside projects. Choose a *project name* and a *project id*. This last one must be unique across the entire GCP environment.
+  1. On the panel on the left, go to *IAM & Admin > Service Accounts > Create Service Account*: A **service account** is an account that you create for a service, as the name suggests, and a service could be anything (like a data pipeline, web service...), and everything this service need, would de configured here in this service account. For example, if the service needs access to the cloud storage, we will grant access to it here.
+      1. Choose a *name* and a *service id*, this one does not need to be unique across GCP
+      1. *Description* can be anything
+      1. *Role*, choose Viewer for now to begin with. Click on *Done*
+      1. With the *service account* created, the see that there are no *keys* created. Click on three dots under *Actions > Manage keys > Add Key > Create new key > JSON > Create*. With this last step, we download the json file into our local computer.
+  1. Install the [*GCP SDK*](https://cloud.google.com/sdk/docs/install?hl=es-419), which is a CLI tool, that lets insteract with the cloud services.
+      1. Check the version
+      ```bash
+      gcloud -v
+      ```
+      1. Set the enviro
