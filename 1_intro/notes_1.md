@@ -304,9 +304,15 @@ GCP generally works in terms of projects. You can create a new project or use an
       1. *Description* can be anything
       1. *Role*, choose Viewer for now to begin with. Click on *Done*
       1. With the *service account* created, the see that there are no *keys* created. Click on three dots under *Actions > Manage keys > Add Key > Create new key > JSON > Create*. With this last step, we download the json file into our local computer.
-  1. Install the [*GCP SDK*](https://cloud.google.com/sdk/docs/install?hl=es-419), which is a CLI tool, that lets insteract with the cloud services.
-      1. Check the version
+  1. Install the [*GCP SDK*](https://cloud.google.com/sdk/docs/install?hl=es-419), which is a CLI tool, that lets insteract with the cloud services. 
+      - Check the version
       ```bash
       gcloud -v
       ```
-      1. Set the enviro
+  1. Set a environment variable to point to the downloaded GCP aut-keys, and login:
+      ```bash
+      export GOOGLE_APPLICATION_CREDENTIALS="<path/yo/your/service-account-authkeys>.json"
+
+      gcloud auth application-default login
+      ```
+      - A popup window will appear and ask you to authenticate the local cli into the google cloud platform account. This is an OAuth authentication, but there are other ways to authenticate (for example for when you are in a virtual machine that does not have a web browser).
