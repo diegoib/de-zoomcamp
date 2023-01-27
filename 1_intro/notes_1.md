@@ -249,7 +249,7 @@ In this way, when we run the container, we are running the script (as it is decl
 
 ### Using Docker Compose
 [`Docker Compose`](https://docs.docker.com/compose/) is a tool for defining and running multiple containers at the same time. With this tool we can run at the same time all the containers that we want, preventign to have to run each container at a time from the command line.  
-First, we need to download and install the tool. Then we need to create a docker-compose file where we specify the containers and specifications we need to run. The file needs to be called `docker-compose.yaml`, and its format is `yaml`. We don't need to specify a **network** as docker compose will take care of that.
+First, we need to download and install the [tool](https://docs.docker.com/compose/install/other/) (in Windows and Mac, it comes along with docker desktop). Then we need to create a docker-compose file where we specify the containers and specifications we need to run. The file needs to be called `docker-compose.yaml`, and its format is `yaml`. We don't need to specify a **network** as docker compose will take care of that.
 Some **Docker Compose** commands:
 * `docker-compose` shows all different commands we can run
 * `docker-compose up` will run the containers specify in the docker-compose.yaml file of the working directory
@@ -516,7 +516,7 @@ First, we need to create the `ssh keys`. If we are using `git bash` (windows), i
     - *USERNAME* is the one we used when creating the ssh keys
     - *IP* is the external IP we copied in the previous step from th VM info
     - Tip: the command `htop` shows some information and a list of the tasks that are running.
-1. Another tip, for future occassions, we can configurate the login information in a config file.
+1. Another tip, for future occassions, we can configurate the login information in a config file. ANd we can also, configure visual studio code to work directly within the VM.
   1. Create a config file in *~/.ssh* in case we don't have it already.
   1. include the following code in the file:
       ```yaml
@@ -529,11 +529,39 @@ First, we need to create the `ssh keys`. If we are using `git bash` (windows), i
       ```bash
       ssh HOST_ALIAS
       ```
+  1. In Visual Studio Code, install the extension `Remote - SSH`. Then, at the bottom left, cick on the *green icon (open a remote window) > Connect to Host*, and because we already created a know host in the config file, we can select it now.
+
+  ![vscode](../images/01_04_vscode.png)
+
 
 Next, let's make some configuration in the VM
-- Install Anaconda. Get the download link for ubuntu in their [webpage](https://www.anaconda.com/products/distribution), and use it in the VM
+- Install `Anaconda`. Get the download link for ubuntu in their [webpage](https://www.anaconda.com/products/distribution), and use it in the VM
   ```bash
   wget https://repo.anaconda.com/archive/Anaconda3-2022.10-Linux-x86_64.sh
   bash Anaconda3-2022.10-Linux-x86_64.sh
   ```
-  We can inspect the file *~/.bashrc* (this file in run every time the OS is initialized), to check the code that Anaconda has added at he bottom of it 
+  We can inspect the file *~/.bashrc* (this file in run every time the OS is initialized), to check the code that Anaconda has added at he bottom of it. If we make any modification to the file and we want that the computer takes it into account, we can run `source ~/.bashrc`.
+- Install `Docker`. For that we run:
+  ```bash
+  sudo apt-get update
+  sudo apt-get install docker.io
+  ```
+  Add docker to the sudoers. We can follow this [tutorial](https://github.com/sindresorhus/guides/blob/main/docker-without-sudo.md).
+- Install `Docker Compose`
+  ```
+  wget https://github.com/docker/compose/releases/download/v2.15.1/docker-compose-linux-x86_64 -O ~/bin/docker-compose
+  chmod -x ~/bin/docker-compose
+  ```
+  And we can add the path were it is located to the *~/.bashrc*. With this, everytime we login into the VM, the path will be already loaded. For this, we open the *~/.bashrc* file with `nano` for example, and add the next line of code at the bottom:
+  ```bash
+  export PATH="${HOME}/bin:${PATH}"
+  ```
+  And next:
+  ```bash
+  source ~/.bashrc
+  ```
+- Clone the `repo` 
+  ```bash
+  git clone https://github.com/DataTalksClub/data-engineering-zoomcamp.git
+  ```
+
