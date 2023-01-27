@@ -484,3 +484,56 @@ terraform destroy
 Once again, you will have to confirm this step by typing `yes` when prompted. This will remove your complete stack from the cloud, so only use it when you're 100% sure of it.
 
 
+## Extra content
+
+### Setting up the Environment in Google Cloud (Cloud VM + SSH access)
+
+First, we need to create the `ssh keys`. If we are using `git bash` (windows), it añready has the ssh client to connect the cloud instance. If not, we need to install `ssh`. To generate the key, we can refer to this GCP [tutorial](https://cloud.google.com/compute/docs/connect/create-ssh-keys?hl=es-419). For linux, the instructions are:
+1. Go to `~/.ssh` directory. If we don't have, we will need to create it. 
+1. Create the keys with this command: 
+    ```bash
+    ssh-keygen -t rsa -f ~/.ssh/KEY_FILENAME -C USERNAME -b 2048
+    ```
+    - *KEY_FILENAME* is the name for the SSH key file. In our case, itr can be *gcp*
+    - *USERNAME* the username 
+
+1. We can set a password or leave it in blank. Two files are created
+      - *gcp* is the private key
+      - *gcp.pub* is the public key
+1. In GCP, go to the left panel, *Compute Engine > Metadata > tab SSH > 'Add ssh key'* (we may need to habilitate the Compute Engine API before)
+1. Go back to the terminal to get the key, enter:
+  ```bash
+  cat gcp.pub
+  ```
+  And copy paste the information into the webpage `SSH key *` cell. Click save.
+1. Next, we go to *VM Instances* and create an instance. We can name it `de-zoomcamp-vm`. We can also select a not very powerful general purpose VM such as *e2-standard-4*. Also, we can select the region and the OS, change the default to ubuntu with 30GBs for storage.
+1. Copy the external IP we get in the panel once the VM is created.
+1. Connect to the VM from the terminal with the following command:
+    ``` bash
+    ssh -i SSH_KEY_PATH USERNAME@IP
+    ```
+    - *SSH_KEY_PATH* in this case is *~/.ssh/gcp*
+    - *USERNAME* is the one we used when creating the ssh keys
+    - *IP* is the external IP we copied in the previous step from th VM info
+    - Tip: the command `htop` shows some information and a list of the tasks that are running.
+1. Another tip, for future occassions, we can configurate the login information in a config file.
+  1. Create a config file in *~/.ssh* in case we don't have it already.
+  1. include the following code in the file:
+      ```yaml
+      Host HOST_ALIAS
+        HostName IP
+        User USERNAME
+        IdentifyFile SSH_KEY_PATH
+      ```
+      With this configuration using the proper values, we can connect to the VM using:
+      ```bash
+      ssh HOST_ALIAS
+      ```
+
+Next, let's make some configuration in the VM
+- Install Anaconda. Get the download link for ubuntu in their [webpage](https://www.anaconda.com/products/distribution), and use it in the VM
+  ```bash
+  wget https://repo.anaconda.com/archive/Anaconda3-2022.10-Linux-x86_64.sh
+  bash Anaconda3-2022.10-Linux-x86_64.sh
+  ```
+  We can inspect the file *~/.bashrc* (this file in run every time the OS is initialized), to check the code that Anaconda has added at he bottom of it 
