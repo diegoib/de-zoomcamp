@@ -291,11 +291,6 @@ Google Cloud Platform (GCP) is a combination of cloud computing services offered
 
 GCP generally works in terms of projects. You can create a new project or use and existing one which comes as default.
 
-### Terraform
-[Terraform](https://www.terraform.io/) is an open source tool by HashiCorp, taht lets provision infrastructure resources with declarative configuration files. These resources can be VMs, containers, storage... Terraform uses an IaC ([Infrasturcture-as-Code](https://www.wikiwand.com/en/Infrastructure_as_code)) approach, which supports devops best practices for change management. It is like a git version control for infrastructure.
-
-### Local Setup for Terraform and GCP
-- Terraform: [Installation](https://developer.hashicorp.com/terraform/downloads?product_intent=terraform)
 - GCP: steps
 
   1. Create a *project*, everything in GCP works inside projects. Choose a *project name* and a *project id*. This last one must be unique across the entire GCP environment.
@@ -316,3 +311,176 @@ GCP generally works in terms of projects. You can create a new project or use an
       gcloud auth application-default login
       ```
       - A popup window will appear and ask you to authenticate the local cli into the google cloud platform account. This is an OAuth authentication, but there are other ways to authenticate (for example for when you are in a virtual machine that does not have a web browser).
+
+Next, let's do some more step to prepare for the 2 resources we are going to create later in GCP:
+
+- Google Cloud Storage (GCS): Data Lake. It is like a bucket in our GCP environment
+  1. Let's add more permissions for the service account. Go to *IAM & Admin > IAM*, select the service that we created in the previous step, and click on the pencil on the rigth. In the real world, we would not use the predefine roles, but customize them to have the permissions just to the buckets, tools the service is going to interact with. Normally, in *Production*, companies have one service for Terraform with admin roles, and other services with restricted roles for the pipelines, web services...
+        1. Add the **Storage Admin** (this is not convinient in a *Production environment*, for but the purpose of the course it is ok). It allows to create buckets and files.
+        1. Add the **Storage Object Admin** role.
+        1. Add the **Big Query Admin** role.
+    1. Enable the APIs to interact between the Cloud and our local CLI.
+        1. https://console.cloud.google.com/apis/library/iam.googleapis.com
+        1. https://console.cloud.google.com/apis/library/iamcredentials.googleapis.com
+- BigQuery: Data Warehouse
+
+
+### Terraform
+[Terraform](https://www.terraform.io/) is an open source tool by HashiCorp, taht lets provision infrastructure resources with declarative configuration files. These resources can be VMs, containers, storage... Terraform uses an IaC ([Infrasturcture-as-Code](https://www.wikiwand.com/en/Infrastructure_as_code)) approach, which supports devops best practices for change management. It is like a git version control for infrastructure.
+
+### Local Setup for Terraform and GCP
+- *Terraform*: [Installation](https://developer.hashicorp.com/terraform/downloads?product_intent=terraform)
+- *Terraform configuration*: The set of files used to describe infrastructure in Terraform is known as a Terraform ***configuration***. Terraform configuration files end up in `.tf` for files written in Terraform language or `tf.json` for JSON files. A Terraform configuration must be in its own working directory; you cannot have 2 or more separate configurations in the same folder. There are mainly 3 configuration files:
+
+  - `terraform version`: states what version of terraform we have installed and is going to use with the terraform commands. This is the native way, but alternatively we can also use for this purpose [`tfenv`](https://github.com/tfutils/tfenv), which is an environmental plug-in client.
+  - `main.tf`: Here's a basic `main.tf` file written in Terraform language with all of the necesary info to describe basic infrastructure:
+
+    ```java
+    terraform {
+      required_providers {
+        google = {
+          source = "hashicorp/google"
+          version = "3.5.0"
+        }
+      }
+    }
+
+    provider "google" {
+      credentials = file("<NAME>.json")
+
+      project = "<PROJECT_ID>"
+      region  = "us-central1"
+      zone    = "us-central1-c"
+    }
+
+    resource "google_compute_network" "vpc_network" {
+      name = "terraform-network"
+    }
+    ```
+    * Terraform divides information into ***blocks***, which are defined within braces (`{}`), similar to Java or C++. However, unlike these languages, statements are not required to end with a semicolon `;` but use linebreaks instead.
+    * By convention, arguments with single-line values in the same nesting level have their equal signs (`=`) aligned for easier reading.
+    * There are 3 main blocks: `terraform`, `provider` and `resource`. There must only be a single `terraform` block but there may be multiple `provider` and `resource` blocks.
+    * The `terraform` block contains settings:
+        * The `required_providers` sub-block specifies the providers required by the configuration. In this example there's only a single provider which we've called `google`.
+            * A _provider_ is a plugin that Terraform uses to create and manage resources.
+            * Each provider needs a `source` in order to install the right plugin. By default the Hashicorp repository is used, in a similar way to Docker images.
+                * `hashicorp/google` is short for `registry.terraform.io/hashicorp/google` .
+            * Optionally, a provider can have an enforced `version`. If this is not specified the latest version will be used by default, which could introduce breaking changes in some rare cases.
+        * We'll see other settings to use in this block later.
+    * The `provider` block configures a specific provider. Since we only have a single provider, there's only a single `provider` block for the `google` provider.
+        * The contents of a provider block are provider-specific. The contents in this example are meant for GCP but may be different for AWS or Azure.
+        * Some of the variables seen in this example, such as `credentials` or `zone`, can be provided by other means which we'll cover later.
+    * The `resource` blocks define the actual components of our infrastructure. In this example we have a single resource.
+        * `resource` blocks have 2 strings before the block: the resource ***type*** and the resource ***name***. Together the create the _resource ID_ in the shape of `type.name`.
+        * About resource types:
+            * The first prefix of the resource type maps to the name of the provider. For example, the resource type `google_compute_network` has the prefix `google` and thus maps to the provider `google`.
+            * The resource types are defined in the Terraform documentation and refer to resources that cloud providers offer. In our example [`google_compute_network` (Terraform documentation link)](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_network) refers to GCP's [Virtual Private Cloud service](https://cloud.google.com/vpc).
+        * Resource names are the internal names that we use in our Terraform configurations to refer to each resource and have no impact on the actual infrastructure.
+        * The contents of a resource block are specific to the resource type. [Check the Terraform docs](https://registry.terraform.io/browse/providers) to see a list of resource types by provider.
+            * In this example, the `google_compute_network` resource type has a single mandatory argument called `name`, which is the name that the resource will have within GCP's infrastructure.
+                * Do not confuse the _resource name_ with the _`name`_ argument!
+  - `variables.tf`: includes **input variables** and **local variables**
+    * ***Input variables*** block types are useful for customizing aspects of other blocks without altering the other blocks' source code. They are often referred to as simply _variables_. They are passed at runtime.
+      ```java
+      variable "region" {
+          description = "Region for GCP resources. Choose as per your location: https://cloud.google.com/about/locations"
+          default = "europe-west6"
+          type = string
+      }
+      ```
+      * Description:
+          * An input variable block starts with the type `variable` followed by a name of our choosing.
+          * The block may contain a number of fields. In this example we use the fields `description`, `type` and `default`.
+          * `description` contains a simple description for documentation purposes.
+          * `type` specifies the accepted value types for the variable
+          * If the `default` field is defined, the variable becomes optional because a default value is already provided by this field. Otherwise, a value must be provided when running the Terraform configuration.
+          * For additional fields, check the [Terraform docs](https://www.terraform.io/language/values/variables).
+      * Variables must be accessed with the keyword `var.` and then the name of the variable.
+      * In our `main.tf` file above, we could access this variable inside the `google` provider block with this line:
+          ```java
+          region = var.region
+          ```
+    * ***Local values*** block types behave more like constants.
+        ```java
+        locals{
+            region  = "us-central1"
+            zone    = "us-central1-c"
+        }
+        ```
+        * Description:
+            * Local values may be grouped in one or more blocks of type `locals`. Local values are often grouped according to usage.
+            * Local values are simpler to declare than input variables because they are only a key-value pair.
+        * Local values must be accessed with the word `local` (_mind the lack of `s` at the end!_).
+            ```java
+            region = local.region
+            zone = local.zone
+            ```
+
+Terraform only have a few commands for execution:
+- `terraform init`: Initialize & install the requiered pulgins, for example the GOOGLE provider. 
+- `terraform plan`: Shows the execution plan. Match changes against the previous state
+- `terraform apply`: Apply changes to cloud
+- `terraform destroy`: Remove your stack from cloud
+
+
+### Creating GCP infrastructure with Terraform
+
+_([Video source](https://www.youtube.com/watch?v=dNkEgO-CExg&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=10))_
+
+We will now create a new `main.tf` file as well as an auxiliary `variables.tf` file with all the blocks we will need for our project.
+
+The infrastructure we will need consists of a Cloud Storage Bucket (`google_storage-bucket`) for our _Data Lake_ and a BigQuery Dataset (`google_bigquery_dataset`).
+
+In `main.tf` we will configure the `terraform` block as follows:
+```java
+terraform {
+  required_version = ">= 1.0"
+  backend "local" {}
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+    }
+  }
+}
+```
+* The `required_version` field states the minimum Terraform version to be used.
+* The `backend` field states where we'd like to store the _state_ of the infrastructure. `local` means that we'll store it locally in our computers. Alternatively, you could store the state online.
+
+The provider will not make use of the `credentials` field because when we set up GCP access we already created a `GOOGLE_APPLICATION_CREDENTIALS` env-var which Terraform can read in order to get our authentication keys.
+
+In the `variables.tf` we will store variables that may change depending on your needs and location. The ones to note are:
+* `region` may vary depending on your geographical location; change it according to your needs.
+* `BQ_DATASET` has the name of the table for BigQuery. You may leave it as it is or change it t fit your needs.
+* `project` is the Project ID of your project in GCP. SInce the ID is unique, it is good practice to have Terraform as for it every time in case the same code is applied on different projects.
+
+You may access [`main.tf` from this link](../1_intro/terraform/main.tf) and [`variables.tf` from this link](../1_intro/terraform/variables.tf). Take a look at them to understand the details of the implementation. Copy them to a new folder within your work directory so that the subfolder only contains the Terraform configuration files. Now run the following commands:
+
+```bash
+terraform init
+```
+
+This will download the necessary plugins to connect to GCP and download them to `./.terraform`. Now let's plan the infrastructure:
+
+```bash
+terraform plan
+```
+
+Terraform will ask for your Project ID. Type it and press enter to let Terraform access GCP and figure out what to do. The infrastructure plan will be printed on screen with all the planned changes marked with a `+` sign next to them.
+
+Let's apply the changes:
+
+```bash
+terraform apply
+```
+
+You will need to confirm this step by typing `yes` when prompted. This will create all the necessary components in the infrastructure an return a `terraform.tfstate` with the current state of the infrastructure.
+
+After you've successfully created the infrastructure, you may destroy it so that it doesn't consume credit unnecessarily:
+
+```bash
+terraform destroy
+```
+
+Once again, you will have to confirm this step by typing `yes` when prompted. This will remove your complete stack from the cloud, so only use it when you're 100% sure of it.
+
+
