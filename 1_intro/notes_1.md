@@ -2,14 +2,19 @@
 
 ## Table of contents
 - [Architecture](#architecture) 
-- [GCP](#gcp)
 - [Docker and Postgres](#docker-and-postgres)
     - [Docker basic concepts](#docker-basic-concepts)
-    - [Running Postgres in a container](#running-Postgres-in-a-container)
+    - [Running Postgres in a container](#running-postgres-in-a-container)
     - [Ingesting data into Postgres](#ingesting-data-into-postgres)
     - [Connecting pgAdmin and Postgres](#connecting-pgadmin-and-postgres)
     - [Dockerizing the Ingestion Script](#dockerizing-the-ingestion-script)
     - [Using Docker Compose](#using-docker-compose)
+- [GCP and Terraform](#gcp-and-terraform)
+    - [Google Cloud Platform](#google-cloud-platform)
+    - [Terraform](#terraform)
+    - [Creating GCP infrastructure with Terraform](#creating-gcp-infrastructure-with-terraform)
+- [Extra content](#extra-content)
+    - [Setting up the Environment in a Google Cloud Virtual Machine](#setting-up-the-environment-in-a-google-cloud-virtual-machine)
 
 
 ## Architecture
@@ -18,6 +23,7 @@ This is the architecture to work along in the course.
 
 ![architecture diagram](../images/01_01_arch.jpg)
 
+_[Back to the top](#table-of-contents)_
 
 ## Docker and Postgres
 
@@ -88,6 +94,7 @@ And then run it with:
 docker run -it test:pandas 2023-01-01
 ```
 
+_[Back to the top](#table-of-contents)_
 
 ### Running Postgres in a container
 
@@ -125,6 +132,7 @@ Postgres commands:
 * `\dt` to show the tables in the database
 * `\d table_name` to describe the table columns and types
 
+_[Back to the top](#table-of-contents)_
 
 ### Ingesting data into Postgres
 
@@ -138,6 +146,7 @@ As the code follows along the old data files in `csv` format (now they are in `p
 
 The code for ingesting the Postgres database with the downloaded data is in [`upload-data.ipynb`](src/upload-data.ipynb).
 
+_[Back to the top](#table-of-contents)_
 
 ### Connecting pgAdmin and Postgres
 
@@ -185,6 +194,7 @@ Once we are inide **pgAdmin**, to connect to the postgres database, we make righ
 
 ![steps](../images/01_03_pgadmin.png)
 
+_[Back to the top](#table-of-contents)_
 
 ### Dockerizing the Ingestion Script
 
@@ -246,6 +256,7 @@ docker run -it \
 
 In this way, when we run the container, we are running the script (as it is declared in the dockerfile that the entrypoint is **["python", "ingest_data.py"]**). Once the script finishes, the container will stop.
 
+_[Back to the top](#table-of-contents)_
 
 ### Using Docker Compose
 [`Docker Compose`](https://docs.docker.com/compose/) is a tool for defining and running multiple containers at the same time. With this tool we can run at the same time all the containers that we want, preventign to have to run each container at a time from the command line.  
@@ -287,6 +298,8 @@ An idea of the port mapping that is happening (it is lacking the arrow mapping t
 
 ![croquis_mapping](../images/01_07_croquis_mapping.png)
 
+_[Back to the top](#table-of-contents)_
+
 ## GCP and Terraform
 
 ### Google Cloud Platform
@@ -327,11 +340,11 @@ Next, let's do some more steps to prepare for the 2 resources we are going to cr
         1. https://console.cloud.google.com/apis/library/iamcredentials.googleapis.com
 - BigQuery: Data Warehouse
 
+_[Back to the top](#table-of-contents)_
 
-### Terraform
+### Terraform 
 [Terraform](https://www.terraform.io/) is an open source tool by HashiCorp, taht lets provision infrastructure resources with declarative configuration files. These resources can be VMs, containers, storage... Terraform uses an IaC ([Infrastructure-as-Code](https://www.wikiwand.com/en/Infrastructure_as_code)) approach, which supports DevOps best practices for change management. It is like a git version control for infrastructure.
 
-### Local Setup for Terraform and GCP
 - *Terraform*: [Installation](https://developer.hashicorp.com/terraform/downloads?product_intent=terraform)
 - *Terraform configuration*: The set of files used to describe infrastructure in Terraform is known as a Terraform ***configuration***. Terraform configuration files end up in `.tf` for files written in Terraform language or `tf.json` for JSON files. A Terraform configuration must be in its own working directory; you cannot have 2 or more separate configurations in the same folder. There are mainly 3 configuration files:
 
@@ -425,6 +438,7 @@ Terraform only have a few commands for execution:
 - `terraform apply`: Apply changes to cloud
 - `terraform destroy`: Remove your stack from cloud
 
+_[Back to the top](#table-of-contents)_
 
 ### Creating GCP infrastructure with Terraform
 
@@ -484,10 +498,11 @@ terraform destroy
 
 Once again, you will have to confirm this step by typing `yes` when prompted. This will remove your complete stack from the cloud, so only use it when you're 100% sure of it.
 
+_[Back to the top](#table-of-contents)_
 
 ## Extra content
 
-### Setting up the Environment in Google Cloud (Cloud VM + SSH access)
+### Setting up the Environment in a Google Cloud Virtual Machine
 
 First, we need to create the `ssh keys`. If we are using `git bash` (windows), it añready has the ssh client to connect the cloud instance. If not, we need to install `ssh`. To generate the key, we can refer to this GCP [tutorial](https://cloud.google.com/compute/docs/connect/create-ssh-keys?hl=es-419). For linux, the instructions are:
 1. Go to `~/.ssh` directory. If we don't have, we will need to create it. 
@@ -598,9 +613,41 @@ Next, let's re run again everything, so we can follow the course.
   ```bash
   gcloud auth activate-service-account --key-file $GOOGLE_APPLICATION_CREDENTIALS
   ```
-- And finally, we can run terraform (*init, plan, apply*) and the scripts to load data.
+- Then, we move to the terrafor folder and run the terraform commands.
+  
+  ```bash
+  terraform init
+  terraform plan
+  terraform apply
+  ```
+  It is important to note we have to enter the project **ID**, not the project **name**.
+- Next, we go to the directory where we have the `dockerfile` and build the image.
+  ```bash
+  docker build -t taxi_ingest:v001 .
+  ```
+  
+  And finally, we run the ingestion script with
+
+  ```bash
+  docker run -it \
+    --network=src_default \
+    taxi_ingest:v001 \
+    --user=root \
+    --password=root \
+    --host=src-pgdatabase-1 \
+    --port=5432 \
+    --db=ny_taxi \
+    --table_name=yellow_taxi_data \
+    --url="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz"
+  ```
+
+  We will need to update the network and host name depending of the names that docker-compose assign to them.
+- We can open pgAdmin in the local browser, as we forwarded the port 8080. And to connect to the postgres server, we have to specify the name of the postgres container.
+
 - At the end, we can shutdown the VM from the remote terminal
 
   ```bash
   sudo shutdown
   ```
+
+_[Back to the top](#table-of-contents)_
