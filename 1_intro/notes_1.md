@@ -284,7 +284,8 @@ services:
      - 8080:80
 ```
 An idea of the port mapping that is happening (it is lacking the arrow mapping the port 80 to 8080):
-![crockis_mapping]('../images/01_07_crockis_mapping.png)
+
+![croquis_mapping](../images/01_07_croquis_mapping.png)
 
 ## GCP and Terraform
 
@@ -502,9 +503,9 @@ First, we need to create the `ssh keys`. If we are using `git bash` (windows), i
       - *gcp.pub* is the public key
 1. In GCP, go to the left panel, *Compute Engine > Metadata > tab SSH > 'Add ssh key'* (we may need to habilitate the Compute Engine API before)
 1. Go back to the terminal to get the key, enter:
-  ```bash
-  cat gcp.pub
-  ```
+    ```bash
+    cat gcp.pub
+    ```
   And copy paste the information into the webpage `SSH key *` cell. Click save.
 1. Next, we go to *VM Instances* and create an instance. We can name it `de-zoomcamp-vm`. We can also select a not very powerful general purpose VM such as *e2-standard-4*. Also, we can select the region and the OS, change the default to ubuntu with 30GBs for storage.
 1. Copy the external IP we get in the panel once the VM is created.
@@ -534,12 +535,14 @@ First, we need to create the `ssh keys`. If we are using `git bash` (windows), i
      ![vscode](../images/01_04_vscode.png)
 
   1. Another thing we can do is port mapping, since we will be running postgres and pgadmin, that we want to interact with our local machine. To do the port mapping, we click on the port tab, next to the terminal tab.
-   ![ports_tab](../images/01_05_ports_tab.png)
-    
-    Then we can enter the port we want to map:
-   ![port_mapping](../images/01_06_port_mapping.png)    
 
-    With this we can go to the web browser and enter *localhost:8080* and we will have access to pgAdmin as if we were running it in local (supossing we are already ruuning a padmin container in the VM, something we are going to see next)
+  ![ports_tab](../images/01_05_ports_tab.png)
+  
+  Then we can enter the port we want to map:
+
+  ![port_mapping](../images/01_06_port_mapping.png)    
+
+  With this we can go to the web browser and enter *localhost:8080* and we will have access to pgAdmin as if we were running it in local (supossing we are already ruuning a padmin container in the VM, something we are going to see next)
 
 Next, let's make some configuration in the VM
 - Install `Anaconda`. Get the download link for ubuntu in their [webpage](https://www.anaconda.com/products/distribution), and use it in the VM
