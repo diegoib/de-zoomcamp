@@ -297,11 +297,11 @@ GCP generally works in terms of projects. You can create a new project or use an
 - GCP: steps
 
   1. Create a *project*, everything in GCP works inside projects. Choose a *project name* and a *project id*. This last one must be unique across the entire GCP environment.
-  1. On the panel on the left, go to *IAM & Admin > Service Accounts > Create Service Account*: A **service account** is an account that you create for a service, as the name suggests, and a service could be anything (like a data pipeline, web service...), and everything this service need, would de configured here in this service account. For example, if the service needs access to the cloud storage, we will grant access to it here.
-      1. Choose a *name* and a *service id*, this one does not need to be unique across GCP
+  1. On the panel on the left, go to *IAM & Admin > Service Accounts > Create Service Account*: A **service account** is an account that you create for a service, as the name suggests, and a service could be anything (like a data pipeline, web service...), and everything this service needs would be configured here, in this service account. For example, if the service needs access to the cloud storage, we will grant access to it here.
+      1. Create a service account and choose a *name* and a *service id*, this one does not need to be unique across GCP
       1. *Description* can be anything
       1. *Role*, choose Viewer for now to begin with. Click on *Done*
-      1. With the *service account* created, the see that there are no *keys* created. Click on three dots under *Actions > Manage keys > Add Key > Create new key > JSON > Create*. With this last step, we download the json file into our local computer.
+      1. With the *service account* created, we can see that there are no *keys* created. Click on three dots under *Actions > Manage keys > Add Key > Create new key > JSON > Create*. With this last step, we download the json file into our local computer.
   1. Install the [*GCP SDK*](https://cloud.google.com/sdk/docs/install?hl=es-419), which is a CLI tool, that lets interact with the cloud services. 
       - Check the version
       ```bash
@@ -315,7 +315,7 @@ GCP generally works in terms of projects. You can create a new project or use an
       ```
       - A popup window will appear and ask you to authenticate the local cli into the google cloud platform account. This is an OAuth authentication, but there are other ways to authenticate (for example for when you are in a virtual machine that does not have a web browser).
 
-Next, let's do some more step to prepare for the 2 resources we are going to create later in GCP:
+Next, let's do some more steps to prepare for the 2 resources we are going to create later in GCP:
 
 - Google Cloud Storage (GCS): Data Lake. It is like a bucket in our GCP environment
   1. Let's add more permissions for the service account. Go to *IAM & Admin > IAM*, select the service that we created in the previous step, and click on the pencil on the rigth. In the real world, we would not use the predefine roles, but customize them to have the permissions just to the buckets, tools the service is going to interact with. Normally, in *Production*, companies have one service for Terraform with admin roles, and other services with restricted roles for the pipelines, web services...
@@ -542,7 +542,7 @@ First, we need to create the `ssh keys`. If we are using `git bash` (windows), i
 
       ![port_mapping](../images/01_06_port_mapping.png)    
 
-      With this we can go to the web browser and enter *localhost:8080* and we will have access to pgAdmin as if we were running it in local (supossing we are already ruuning a padmin container in the VM, something we are going to see next)
+      With this we can go to the web browser and enter *localhost:8080* and we will have access to pgAdmin as if we were running it in local (suppossing we are already running a pgadmin container in the VM, something we are going to see next)
 
 Next, let's make some configuration in the VM
 - Install `Anaconda`. Get the download link for ubuntu in their [webpage](https://www.anaconda.com/products/distribution), and use it in the VM
@@ -560,7 +560,7 @@ Next, let's make some configuration in the VM
 - Install `Docker Compose`. We can place it in a new `bin` folder in home. 
   ```
   wget https://github.com/docker/compose/releases/download/v2.15.1/docker-compose-linux-x86_64 -O ~/bin/docker-compose
-  chmod -x ~/bin/docker-compose
+  chmod +x ~/bin/docker-compose
   ```
   And we can add the path were it is located to the *~/.bashrc*. With this, everytime we login into the VM, the path will be already loaded. For this, we open the *~/.bashrc* file with `nano` for example, and add the next line of code at the bottom:
   ```bash
@@ -570,7 +570,7 @@ Next, let's make some configuration in the VM
   ```bash
   source ~/.bashrc
   ```
-- Install Terraform: we can either install it through a package manager or download the binary file. If we download the binary file, we can place it in *~/bin* and as the resulting file is executable and that directory has already been included in PATH, we can use directly in the terminal.
+- Install `Terraform`: we can either install it through a package manager or download the binary file. If we download the binary file, we can place it in *~/bin* and as the resulting file is executable and that directory has already been included in PATH, we can use directly in the terminal.
 
 
 Next, let's re run again everything, so we can follow the course.
@@ -582,7 +582,7 @@ Next, let's re run again everything, so we can follow the course.
   ```bash
   docker-compose up -d
   ```
-- Transfer the google credentials json file to the VM. For that we can use sftp for transfering the files:
+- Transfer the google credentials json file to the VM. For that we can use **sftp** for transfering the files:
   ```bash
   sftp HOST_ALIAS
   mkdir .gc
@@ -598,5 +598,6 @@ Next, let's re run again everything, so we can follow the course.
   ```bash
   gcloud auth active-service-account --key-file $GOOGLE_APPLICATIOIN_CREDENTIALS
   ```
+- And finally, we can run terraform and the scripts to load data.
 
 
