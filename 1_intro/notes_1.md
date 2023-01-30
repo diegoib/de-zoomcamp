@@ -596,8 +596,11 @@ Next, let's re run again everything, so we can follow the course.
   Now authenticate
 
   ```bash
-  gcloud auth active-service-account --key-file $GOOGLE_APPLICATIOIN_CREDENTIALS
+  gcloud auth activate-service-account --key-file $GOOGLE_APPLICATION_CREDENTIALS
   ```
-- And finally, we can run terraform and the scripts to load data.
+- And finally, we can run terraform (*init, plan, apply*) and the scripts to load data.
+- At the end, we can shutdown the VM from the remote terminal
 
-
+  ```bash
+  sudo shutdown
+  ```
