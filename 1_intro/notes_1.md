@@ -532,17 +532,17 @@ First, we need to create the `ssh keys`. If we are using `git bash` (windows), i
       ```
   1. In Visual Studio Code, install the extension `Remote - SSH`. Then, at the bottom left, click on the *green icon (open a remote window) > Connect to Host*, and because we already created a know host in the config file, we can select it now. Once we are connected, the terminal of visual studio code will run commands on the srver terminal.
 
-     ![vscode](../images/01_04_vscode.png)
+      ![vscode](../images/01_04_vscode.png)
 
   1. Another thing we can do is port mapping, since we will be running postgres and pgadmin, that we want to interact with our local machine. To do the port mapping, we click on the port tab, next to the terminal tab.
 
-  ![ports_tab](../images/01_05_ports_tab.png)
-  
-  Then we can enter the port we want to map:
+      ![ports_tab](../images/01_05_ports_tab.png)
+      
+      Then we can enter the port we want to map:
 
-  ![port_mapping](../images/01_06_port_mapping.png)    
+      ![port_mapping](../images/01_06_port_mapping.png)    
 
-  With this we can go to the web browser and enter *localhost:8080* and we will have access to pgAdmin as if we were running it in local (supossing we are already ruuning a padmin container in the VM, something we are going to see next)
+      With this we can go to the web browser and enter *localhost:8080* and we will have access to pgAdmin as if we were running it in local (supossing we are already ruuning a padmin container in the VM, something we are going to see next)
 
 Next, let's make some configuration in the VM
 - Install `Anaconda`. Get the download link for ubuntu in their [webpage](https://www.anaconda.com/products/distribution), and use it in the VM
