@@ -283,6 +283,8 @@ services:
    ports:
      - 8080:80
 ```
+An idea of the port mapping that is happening (it is lacking the arrow mapping the port 80 to 8080):
+![crockis_mapping]('../images/01_07_crockis_mapping.png)
 
 ## GCP and Terraform
 
@@ -299,7 +301,7 @@ GCP generally works in terms of projects. You can create a new project or use an
       1. *Description* can be anything
       1. *Role*, choose Viewer for now to begin with. Click on *Done*
       1. With the *service account* created, the see that there are no *keys* created. Click on three dots under *Actions > Manage keys > Add Key > Create new key > JSON > Create*. With this last step, we download the json file into our local computer.
-  1. Install the [*GCP SDK*](https://cloud.google.com/sdk/docs/install?hl=es-419), which is a CLI tool, that lets insteract with the cloud services. 
+  1. Install the [*GCP SDK*](https://cloud.google.com/sdk/docs/install?hl=es-419), which is a CLI tool, that lets interact with the cloud services. 
       - Check the version
       ```bash
       gcloud -v
@@ -326,7 +328,7 @@ Next, let's do some more step to prepare for the 2 resources we are going to cre
 
 
 ### Terraform
-[Terraform](https://www.terraform.io/) is an open source tool by HashiCorp, taht lets provision infrastructure resources with declarative configuration files. These resources can be VMs, containers, storage... Terraform uses an IaC ([Infrasturcture-as-Code](https://www.wikiwand.com/en/Infrastructure_as_code)) approach, which supports devops best practices for change management. It is like a git version control for infrastructure.
+[Terraform](https://www.terraform.io/) is an open source tool by HashiCorp, taht lets provision infrastructure resources with declarative configuration files. These resources can be VMs, containers, storage... Terraform uses an IaC ([Infrastructure-as-Code](https://www.wikiwand.com/en/Infrastructure_as_code)) approach, which supports DevOps best practices for change management. It is like a git version control for infrastructure.
 
 ### Local Setup for Terraform and GCP
 - *Terraform*: [Installation](https://developer.hashicorp.com/terraform/downloads?product_intent=terraform)
@@ -424,8 +426,6 @@ Terraform only have a few commands for execution:
 
 
 ### Creating GCP infrastructure with Terraform
-
-_([Video source](https://www.youtube.com/watch?v=dNkEgO-CExg&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=10))_
 
 We will now create a new `main.tf` file as well as an auxiliary `variables.tf` file with all the blocks we will need for our project.
 
@@ -529,10 +529,17 @@ First, we need to create the `ssh keys`. If we are using `git bash` (windows), i
       ```bash
       ssh HOST_ALIAS
       ```
-  1. In Visual Studio Code, install the extension `Remote - SSH`. Then, at the bottom left, cick on the *green icon (open a remote window) > Connect to Host*, and because we already created a know host in the config file, we can select it now.
+  1. In Visual Studio Code, install the extension `Remote - SSH`. Then, at the bottom left, click on the *green icon (open a remote window) > Connect to Host*, and because we already created a know host in the config file, we can select it now. Once we are connected, the terminal of visual studio code will run commands on the srver terminal.
 
-  ![vscode](../images/01_04_vscode.png)
+     ![vscode](../images/01_04_vscode.png)
 
+  1. Another thing we can do is port mapping, since we will be running postgres and pgadmin, that we want to interact with our local machine. To do the port mapping, we click on the port tab, next to the terminal tab.
+   ![ports_tab](../images/01_05_ports_tab.png)
+    
+    Then we can enter the port we want to map:
+   ![port_mapping](../images/01_06_port_mapping.png)    
+
+    With this we can go to the web browser and enter *localhost:8080* and we will have access to pgAdmin as if we were running it in local (supossing we are already ruuning a padmin container in the VM, something we are going to see next)
 
 Next, let's make some configuration in the VM
 - Install `Anaconda`. Get the download link for ubuntu in their [webpage](https://www.anaconda.com/products/distribution), and use it in the VM
@@ -547,7 +554,7 @@ Next, let's make some configuration in the VM
   sudo apt-get install docker.io
   ```
   Add docker to the sudoers. We can follow this [tutorial](https://github.com/sindresorhus/guides/blob/main/docker-without-sudo.md).
-- Install `Docker Compose`
+- Install `Docker Compose`. We can place it in a new `bin` folder in home. 
   ```
   wget https://github.com/docker/compose/releases/download/v2.15.1/docker-compose-linux-x86_64 -O ~/bin/docker-compose
   chmod -x ~/bin/docker-compose
@@ -560,8 +567,33 @@ Next, let's make some configuration in the VM
   ```bash
   source ~/.bashrc
   ```
+- Install Terraform: we can either install it through a package manager or download the binary file. If we download the binary file, we can place it in *~/bin* and as the resulting file is executable and that directory has already been included in PATH, we can use directly in the terminal.
+
+
+Next, let's re run again everything, so we can follow the course.
 - Clone the `repo` 
   ```bash
   git clone https://github.com/DataTalksClub/data-engineering-zoomcamp.git
   ```
+- Go to *week 1* folder, and run docker-compose (`-d` from detached mode)
+  ```bash
+  docker-compose up -d
+  ```
+- Transfer the google credentials json file to the VM. For that we can use sftp for transfering the files:
+  ```bash
+  sftp HOST_ALIAS
+  mkdir .gc
+  cd .gc
+  put FILE
+  ```
+- Authenticate into de GCP account. In the local machine, we used OAuth, but it needs a web broser and it is not possible in a remote virtaul machine instance. So we can proceed with:
+  ```bash
+  export GOOGLE_APPLICATION_CREDENTIALS=~/.gc/FILE.json
+  ```
+  Now authenticate
+
+  ```bash
+  gcloud auth active-service-account --key-file $GOOGLE_APPLICATIOIN_CREDENTIALS
+  ```
+
 
