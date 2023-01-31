@@ -90,19 +90,19 @@ We can check that prefect was installed correctly by checking its version in the
 prefect version
 ```
 Next, we are going to modify the `ingest_data.py` file from previous module, so we can add prefect features. 
-- `flow`: is the most basic object from prefect. It is a container of workflow logic, that is going to allow us to interact and understand the state of the workflow. Flows are much like functions, they take inputs, they perform work, they return outputs. Flows contain tasks. And FLows can also contain another Flows.
-    It is a decorator we are going to add over a main function
-    ```python
-    @flow(name='Ingest Flow')
-    def main_flow():
-    ```
-- `task`: they can receive metadata about upstream dependencies, which gives the opportunity to have a task wait on the completition of another task before executing. Actually, they are not required for flows.
-    ```python
-    @task(log_prints=True, retries=3)
-    def ingest_data(user, password, host, port, db, table_name, url):
-    ```
-    - `log_prints`    
-    - `retries`: automatic retries. In this case is important, because we are pulling external data (taxi data), and if that fails, we want it to try again.
+`flows` is the most basic object from prefect. It is a container of workflow logic, that is going to allow us to interact and understand the state of the workflow. Flows are much like functions, they take inputs, they perform work, they return outputs. Flows contain tasks. And FLows can also contain another Flows.
+It is a decorator we are going to add over a main function
+```python
+@flow(name='Ingest Flow')
+def main_flow():
+```
+`tasks` can receive metadata about upstream dependencies, which gives the opportunity to have a task wait on the completition of another task before executing. Actually, they are not required for flows.
+```python
+@task(log_prints=True, retries=3)
+def ingest_data(user, password, host, port, db, table_name, url):
+```
+- `log_prints`    
+- `retries`: automatic retries. In this case is important, because we are pulling external data (taxi data), and if that fails, we want it to try again.
 
 Next, we are going to add some steps to our ETL process. Let's continue by splitting the `ingest_data` function into more steps. The first step is going to be just an extract data step.
 ```python
@@ -120,6 +120,24 @@ prefect orion start
 We can access it from the web browser in the url `localhost:4200`
 ![prefect orion](../images/02_02_prefect_orion.png)
 
+`blocks` are going to enable the storage of configuration and provide an interface of interacting with external systems. There are several types of blocks. They are inmutable, so we can reuse these in multiple flow codes. Blocks can build upon bolcks.
+Prefect have `collections` [catalog](https://docs.prefect.io/collections/catalog/) for integration.
 
+Next, we are going to use the *SQL Alchemy* block in our *ingest_data.py* file, to replace the connection, so we don't have to hardcode the user, password, host... First, in Orion, we need to add an sqlalchemy block, name it, specify the type of asyndriver (postgres) and the syncdriver (postgres+psycopg2 in our case), and specify the database name, username, password...
 
+![postgres driver](../images/02_04_postgres_driver.png)
 
+We add it into our code
+```python
+from prefect_sqlalchemy import SqlAlchemyConnector
+
+connection_block@task(log_prints=True, retries=3)
+def ingest_data(table_name, df):
+    # specify the name of the block created in Orion
+    connection_block = SqlAlchemyConnector.load('postgres-connector')
+
+    with connection_block.get_connection(begin=False) as engine:
+
+        df.head(n=0).to_sql(name=table_name, con=engine, if_exists='replace')
+        df.to_sql(name=table_name, con=engine, if_exists='append')
+```
