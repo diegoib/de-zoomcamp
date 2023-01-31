@@ -36,10 +36,10 @@ def transform_data(df):
     print('pre:missing passenger count: {}'.format(df['passenger_count'].isin([0]).sum()))
     df = df[df['passenger_count'] != 0]
     print('post:missing passenger count: {}'.format(df['passenger_count'].isin([0]).sum()))
-
+    return df
 
 @task(log_prints=True, retries=3)
-def ingest_data(table_name, df):
+def load_data(table_name, df):
     # specify the name of the block created in Orion
     connection_block = SqlAlchemyConnector.load('postgres-connector')
 
@@ -58,10 +58,10 @@ def main_flow(table_name: str):
     log_subflow(table_name)
     raw_data = extract_data(csv_url)
     data = transform_data(raw_data)
-    ingest_data(table_name, data)
+    load_data(table_name, data)
 
 if __name__ == '__main__':
 
-    main_flow("yellow_taxi_data")
+    main_flow("yellow_taxi_data_pf")
 
 
