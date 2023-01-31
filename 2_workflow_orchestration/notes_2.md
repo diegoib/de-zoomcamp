@@ -1,11 +1,9 @@
 # Workflow Orchestration
 
 ## Table of contents
-- [Architecture](#architecture) 
-- [Docker and Postgres](#docker-and-postgres)
-    - [Docker basic concepts](#docker-basic-concepts)
-    - [Running Postgres in a container](#running-postgres-in-a-container)
-
+- [Basic concepts](#basic_-concepts) 
+    - [Data Lake](#data-lake)
+    - [ETL vs ELT](#etl-vs-elt)
 
 
 ## Basic concepts
@@ -39,6 +37,8 @@ And the cloud providers for data lakes are:
 - *AWS* - S3
 - *Azure* - Blob storage
 
+_[Back to the top](#table-of-contents)_
+
 ### ETL vs ELT
 - *ETL*
     - stands for Extract, Transform and Load
@@ -48,3 +48,78 @@ And the cloud providers for data lakes are:
     - stands for Extract, Load and Transform
     - used for large amounts of data
     - it is a data lake solution, and provides data lake support (Schema on read). We write the data first and determine the schema on the read
+
+_[Back to the top](#table-of-contents)_
+
+
+## Workflow orchestration
+### Introduction to workflow orchestration
+*Workflow orchestration* means governing our data flow in a way that respects orchestration rules and our business logic. It lets us turn any code into a workflow that we can schedule, run and observe. 
+
+![workflow orchestration](../images/02_01_workflow.png)
+
+Some of the core features that a workflow orchestration tool needs to have are:
+- remote execution
+- scheduling
+- retries
+- caching
+- integration with external systems (API, databases)
+- Ad-hoc runs
+- parametrization
+
+### Introduction to Prefect
+Prefect is a data flow automation platform, that allows to add observability and orchestration by using python, just to write code as workflows. It lets us run and monitor pipelines at scale.
+First, lets install the next requirements
+```python
+pandas==1.5.2
+prefect==2.7.7
+prefect-sqlalchemy==0.2.2
+prefect-gcp[cloud_storage]==0.2.4
+protobuf==4.21.11
+pyarrow==10.0.1
+pandas-gbq==0.18.1
+psycopg2-binary==2.9.5
+sqlalchemy==1.4.46
+```
+Using the command
+```bash
+pip install -r requirements.txt
+```
+We can check that prefect was installed correctly by checking its version in the terminal
+```bash
+prefect version
+```
+Next, we are going to modify the `ingest_data.py` file from previous module, so we can add prefect features. 
+- `flow`: is the most basic object from prefect. It is a container of workflow logic, that is going to allow us to interact and understand the state of the workflow. Flows are much like functions, they take inputs, they perform work, they return outputs. Flows contain tasks. And FLows can also contain another Flows.
+    It is a decorator we are going to add over a main function
+    ```python
+    @flow(name='Ingest Flow')
+    def main_flow():
+    ```
+- `task`: they can receive metadata about upstream dependencies, which gives the opportunity to have a task wait on the completition of another task before executing. Actually, they are not required for flows.
+    ```python
+    @task(log_prints=True, retries=3)
+    def ingest_data(user, password, host, port, db, table_name, url):
+    ```
+    - `log_prints`    
+    - `retries`: automatic retries. In this case is important, because we are pulling external data (taxi data), and if that fails, we want it to try again.
+
+Next, we are going to add some steps to our ETL process. Let's continue by splitting the `ingest_data` function into more steps. The first step is going to be just an extract data step.
+```python
+@task(log_prints=True, retries=3)
+def extract_data(log_prints=True, retries=3, cache_key_fn=task_input_hash, cache_expiration=timedelta(days=1))
+```
+- `cache_key_fn`: in case we are running several times a workflow with heavy computation, and we know it was already successful, we can pull from the cache result to make the execution go faster and efficiently
+- `cache_expiration`
+
+
+We can start the prefect UI (Orion) with the following command and see the flow runs:
+```bash
+prefect orion start
+```
+We can access it from the web browser in the url `localhost:4200`
+![prefect orion](../images/02_02_prefect_orion.png)
+
+
+
+
