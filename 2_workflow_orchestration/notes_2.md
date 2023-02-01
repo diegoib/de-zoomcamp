@@ -10,8 +10,8 @@
 ### Data Lake
 A data lake is a central repository that holds big data from many sources. This data can be structured, semi-structured or unstructured. The idea is to ingest data as quickly as possible and make it available or accessible to other team members (data scientists, data analysts...).
 
-Generally, when ingesting data to the data lake, we would associate some sort of emtadata for faster access.
-- Differences between a data lake and a data warehouse
+Generally, when ingesting data to the data lake, we would associate some sort of metadata for faster access.
+- Differences between a data lake and a data warehouse:
     - Data lake
         - raw: unstructured
         - large: terabytes
@@ -123,7 +123,7 @@ We can access it from the web browser in the url `localhost:4200`
 `blocks` are going to enable the storage of configuration and provide an interface of interacting with external systems. There are several types of blocks. They are inmutable, so we can reuse these in multiple flow codes. Blocks can build upon bolcks.
 Prefect have `collections` [catalog](https://docs.prefect.io/collections/catalog/) for integration.
 
-Next, we are going to use the *SQL Alchemy* block in our *ingest_data.py* file, to replace the connection, so we don't have to hardcode the user, password, host... First, in Orion, we need to add an sqlalchemy block, name it, specify the type of asyndriver (postgres) and the syncdriver (postgres+psycopg2 in our case), and specify the database name, username, password...
+Next, we are going to use the *SQL Alchemy* block in our *ingest_data_flow.py* file, to replace the connection, so we don't have to hardcode the user, password, host... First, in Orion, we need to add an sqlalchemy block, name it, specify the type of asyndriver (postgres) and the syncdriver (postgres+psycopg2 in our case), and specify the database name, username, password...
 
 ![postgres driver](../images/02_04_postgres_driver.png)
 
@@ -140,4 +140,25 @@ def ingest_data(table_name, df):
 
         df.head(n=0).to_sql(name=table_name, con=engine, if_exists='replace')
         df.to_sql(name=table_name, con=engine, if_exists='append')
+```
+
+### ETL with GCP and Prefect
+The idea is we are going to create a python file with a main flow function that is going to call a number of other functions, that will be our task functions.
+First we need to create a *bucket* in GCP. For that we go to *Cloud Storage > Create*
+- Give it a unique permament name
+Next, we need to create a block in Prefect. For that, we need to register them in the command line.
+```bash
+prefect block register -m prefect_gcp
+```
+And then in Orion, go to *Blocks* and click on `GCS Bucket`. Name it (for example *zoom-gcs*) and write the name of the bucket. Then, we add the credentials for accessing the gcp bucket. We need to create another block, a `GCP Credentials` block. We have to name it, and include the path to the *Service Account File* (the JSON file we used before to authenticate the our working machine with GCP in order to use for example Terraform). Then, back in the `GCS Bucket` we select the new `GCP Credentials` Block, and finally click on *Create*.
+
+```python
+@task()
+def write_gcs(path: Path) -> None:
+    '''Upload local parquet file to GCS'''
+    gcs_block = GcsBucket.load('zoom-gcs')
+    gcs_block.upload_from_path(
+        from_path=path,
+        to_path=path
+    )
 ```

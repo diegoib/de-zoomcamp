@@ -613,7 +613,7 @@ Next, let's re run again everything, so we can follow the course.
   ```bash
   gcloud auth activate-service-account --key-file $GOOGLE_APPLICATION_CREDENTIALS
   ```
-- Then, we move to the terrafor folder and run the terraform commands.
+- Then, we move to the terraform folder and run the terraform commands.
   
   ```bash
   terraform init
