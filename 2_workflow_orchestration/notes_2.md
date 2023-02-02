@@ -162,3 +162,4 @@ def write_gcs(path: Path) -> None:
         to_path=path
     )
 ```
+After these steps, we have created the `etl_web_to_gcs.py` file.
