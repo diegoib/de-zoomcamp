@@ -162,4 +162,5 @@ def write_gcs(path: Path) -> None:
         to_path=path
     )
 ```
-After these steps, we have created the `etl_web_to_gcs.py` file.
+After these steps, we have created the `etl_web_to_gcs.py` file.  
+The next thing is to create another script to load the data from gcs (our data lake) to Big Query. For that, we need to create a BigQuery instance in GCP. In the portal, we go to *BigQuery > + Add Data* and we create a table
