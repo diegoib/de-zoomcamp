@@ -53,6 +53,9 @@ _[Back to the top](#table-of-contents)_
 
 
 ## Workflow orchestration
+
+This time, the github repo link with the code is not contained in the DataTalkClub repo but in the [Prefect repo](https://github.com/discdiver/prefect-zoomcamp)
+
 ### Introduction to workflow orchestration
 *Workflow orchestration* means governing our data flow in a way that respects orchestration rules and our business logic. It lets us turn any code into a workflow that we can schedule, run and observe. 
 
@@ -162,5 +165,43 @@ def write_gcs(path: Path) -> None:
         to_path=path
     )
 ```
-After these steps, we have created the `etl_web_to_gcs.py` file.  
-The next thing is to create another script to load the data from gcs (our data lake) to Big Query. For that, we need to create a BigQuery instance in GCP. In the portal, we go to *BigQuery > + Add Data* and we create a table
+After these steps, we have created the `etl_web_to_gcs.py` file, so we can run it.
+```bash
+python etl_web_to_gcs.py
+```
+
+The next thing is to create another script to load the data from gcs (our data lake) to Big Query. For that, we need to create a BigQuery instance in GCP. In the portal, we go to *BigQuery > + Add Data > Popular sources: Google Cloud Storage*, browse and select the data we ingested to GCS. In dataset, select *Create* and name it `dezoomcamp`. Back to the main create table window, name the table `rides`, and click *Create table*. Once the table is created, we go a look for the table, and click on *Query*, we are going to delete the data, because we just needed the schema.
+```sql
+DELETE FROM gcp_project.dezoomcamp.rides WHERE true;
+```
+Then, we can execute the script `etl_gcs_to_bg.py`.
+```bash
+python etl_gcs_to_bg.py
+```
+
+### Parametrizing Flow and Deployments with ETL into GCS flow
+
+For not having to run the etls manually from the terminal, we can do it and schedule in Prefect. Deployment in Prefect is a server-side concept that encapsulates a flow allowing it to be scheduled and triggered via the [API](https://docs.prefect.io/concepts/deployments/). Using a deployment, we are going to be able to have our flow code and a deployment definition, so Prefect now know that, for example, there is a flow that maybe runs on a schedule.  
+There are two main ways to build a `deployment`. One is through the CLI and the other is through python.
+To buil a deployment, first we have modified a little our `etl_web_to_gcs.py` script and introduced a parent flow that introduces parameter into the etl_web_to_gcs flow function. The resulting script is called `parametrized_flow.py`. Then we can build the deployment from this script through the command line:
+```bash
+prefect deployment build ./parametrized_flow.py:etl_parent_flow -n "Parametrized ETL"
+```
+We specify:
+- the script: `parametrized_flow.py`
+- the entrypoint function: `etl_parent_flow`
+- a name: `Parametrized ETL`
+Once we run the command, a file `etl_parent_flow-deployment.yaml` will be created. This is all that metadata the the deployment needs to know. Having a look at the file, we see that has some fields for parameters. We can introduce the parameters in here.
+![deployment parameters](../images/02_05_deployment_parameters.png)
+Then, we have to apply this deployment to Prefect:
+```bash
+prefect deployment apply etl_paren_flow-deployment.yaml
+```
+This command send all of the metadata over the Prefect API. We can inspect it in the Prefect Orion UI, and we can even modify again the paremeters we specified before.
+![deployment ui](../images/02_06_deployment_ui.png)
+`Work Queues` and `agents`, an `agent` is a very lightweight python process that is living in the execution environment. This agent is pulling from a `work queue` (we need to have a deployment run in a work queue). To start the agent, we run:
+```bash
+prefect agent start --work-queue "deafult"
+```
+
+We can create a `notification` for when the process finishes, even if it is successfully or not. For that we click on *Notificatons* in the left tab on th UI.

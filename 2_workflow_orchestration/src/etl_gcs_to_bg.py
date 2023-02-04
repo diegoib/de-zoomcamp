@@ -36,7 +36,6 @@ def write_bq(df: pd.DataFrame) -> None:
         chuncksize=500_000,
         if_exists='append'
     )
-    
 
 
 @flow()
