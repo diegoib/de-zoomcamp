@@ -179,7 +179,7 @@ Then, we can execute the script `etl_gcs_to_bg.py`.
 python etl_gcs_to_bg.py
 ```
 
-### Parametrizing Flow and Deployments with ETL into GCS flow
+### Parametrizing Flow and Deployments
 
 For not having to run the etls manually from the terminal, we can do it and schedule in Prefect. Deployment in Prefect is a server-side concept that encapsulates a flow allowing it to be scheduled and triggered via the [API](https://docs.prefect.io/concepts/deployments/). Using a deployment, we are going to be able to have our flow code and a deployment definition, so Prefect now know that, for example, there is a flow that maybe runs on a schedule.  
 There are two main ways to build a `deployment`. One is through the CLI and the other is through python.
@@ -192,16 +192,56 @@ We specify:
 - the entrypoint function: `etl_parent_flow`
 - a name: `Parametrized ETL`
 Once we run the command, a file `etl_parent_flow-deployment.yaml` will be created. This is all that metadata the the deployment needs to know. Having a look at the file, we see that has some fields for parameters. We can introduce the parameters in here.
+
 ![deployment parameters](../images/02_05_deployment_parameters.png)
+
 Then, we have to apply this deployment to Prefect:
 ```bash
 prefect deployment apply etl_paren_flow-deployment.yaml
 ```
 This command send all of the metadata over the Prefect API. We can inspect it in the Prefect Orion UI, and we can even modify again the paremeters we specified before.
+
 ![deployment ui](../images/02_06_deployment_ui.png)
+
 `Work Queues` and `agents`, an `agent` is a very lightweight python process that is living in the execution environment. This agent is pulling from a `work queue` (we need to have a deployment run in a work queue). To start the agent, we run:
 ```bash
 prefect agent start --work-queue "deafult"
 ```
 
 We can create a `notification` for when the process finishes, even if it is successfully or not. For that we click on *Notificatons* in the left tab on th UI.
+
+### Schedules and Docker Storage with Infrastructure
+
+We can schedule deployments from the UI. We can click on the deployment tab, select the deployment we want, and the click on the schedule add button.
+
+![schedule deployment](../images/02_07_schedule_deployment.png)
+
+The schedule can also be specified ate the moment of building the deployment in the CLI:
+
+```python
+prefect deployment build  ./parametrized_flow.py:etl_parent_flow -n etl2 --cron "0 0 * * *" -a
+```
+the `-a` is to apply that directly.
+
+We can run all the code in Docker. By now, we have do it locally, but we can host the code in a docker image over dockerhub for example, and use it whenever we need.  
+First, we are going to create a dockerfile. We creae a new requierements file, specifically for docker, so we take out the installation of the prefect as we already have it in the base prefect docker image we are going to use.
+
+```dockerfile
+FROM prefecthq/prefect:2.7.7-python3.9
+
+COPY docker-requirements.txt .
+
+RUN pip install -r docker-requirements.txt --trusted-host pypi.python.org --no-chace-dir
+
+COPY parametrized_flow.py /opt/prefect/flows/
+```
+
+And we then we build it from the CLI.
+
+```bash
+docker image build -t diegoib/prefect:zoom .
+```
+
+I use `diegoib`, that is my dockerhub user, as we are going to push this image later to dockerhub.  
+Next we login into [dockerhub](https://docs.docker.com/engine/reference/commandline/login/).
+
