@@ -243,5 +243,71 @@ docker image build -t diegoib/prefect:zoom .
 ```
 
 I use `diegoib`, that is my dockerhub user, as we are going to push this image later to dockerhub.  
-Next we login into [dockerhub](https://docs.docker.com/engine/reference/commandline/login/).
+Next we login into [dockerhub](https://docs.docker.com/engine/reference/commandline/login/). And then we push the image:
+
+```bash
+docker image push diegoibayo/prefect:zoom
+```
+
+we need to make a docker block in prefect so we can use the dokcerhub image. In the UI, we go to *Blocks*, select *Docker Container*. We give it a name (in our caso zoom), and specify the image we want *diegoibayo/prefect:zoom*. In *ImagePullPolicy* select *ALWAYS*. Toggle on *Auto Remove*. And then click *Create*. The block can also be created through python code:
+
+```python
+from prefect.infrestructure.docker import DockerContainer
+
+docker_block = DockerContainer(
+    image="diegoibayo/prefect:zoom",
+    image_pull_policy="ALWAYS",
+    auto_remove=True
+)
+
+docker_block.save("zoom", overwrite=True)
+```
+
+To make the deployment with the docker container, we run the script `docker_deploy.py`
+```python
+from prefect.deployment import Deployment
+from prefect.infrastructure.docker import DockerContainer
+from parametrized_flow import etl_parent_flow
+
+docker_block = DockerContainer.load("zoom")
+
+docker_dep = Deployment.build_from_flow(
+    flow=etl_parent_flow,
+    name='docker-flow',
+    infrastructure=docker_block
+)
+
+if __name__ == '__main__':
+    docker_dep.apply()
+```
+Which is the one that is going to run also our etl_parent_flow function. We run it in the command line:
+
+```bash
+python docker_deploy.py
+```
+
+Antoher thing about Prefect it that there are `profiles`. We can check them with:
+```bash
+prefect profile ls
+```
+
+We are asigned the *default* one. But we can configure other different profiles so we can interact with different workspaces while working with Prefect in the cloud.  
+Another thing is that, instead of using the local ephemeral API that we have been using until now, we want to actually specify that we want to use an API endpoint and a [specific URL](https://docs.prefect.io/concepts/settings/#setting-and-clearing-values). This will allow our Docker container to interface with the Orion server. So we run
+
+```bash
+prefect config set PREFECT_API_URL="http://127.0.0.1:4200/api"
+```
+
+Now that we have our deployment up and applied, we need an agent to look for workloads to be able to run it.
+```bash
+prefect agent start -q default
+```
+
+And we run it with
+
+```bash
+prefect deployments run etl-parent-flow/docker-flow -p "months[1,2]"
+```
+We have overwritten the parameter *months*.  
+And this time, the whole process is going to be running in a docker container and not locally as before.
 
