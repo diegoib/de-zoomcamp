@@ -148,11 +148,15 @@ def ingest_data(table_name, df):
 ### ETL with GCP and Prefect
 The idea is we are going to create a python file with a main flow function that is going to call a number of other functions, that will be our task functions.
 First we need to create a *bucket* in GCP. For that we go to *Cloud Storage > Create*
+
 - Give it a unique permament name
+
 Next, we need to create a block in Prefect. For that, we need to register them in the command line.
+
 ```bash
 prefect block register -m prefect_gcp
 ```
+
 And then in Orion, go to *Blocks* and click on `GCS Bucket`. Name it (for example *zoom-gcs*) and write the name of the bucket. Then, we add the credentials for accessing the gcp bucket. We need to create another block, a `GCP Credentials` block. We have to name it, and include the path to the *Service Account File* (the JSON file we used before to authenticate the our working machine with GCP in order to use for example Terraform). Then, back in the `GCS Bucket` we select the new `GCP Credentials` Block, and finally click on *Create*.
 
 ```python

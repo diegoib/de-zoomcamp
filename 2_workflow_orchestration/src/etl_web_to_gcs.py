@@ -48,7 +48,7 @@ def etl_web_to_gcs() -> None:
 
     df = fetch(dataset_url)
     df_clean = clean(df)
-    path = write_local(df_clean)
+    path = write_local(df_clean, color, dataset_file)
     write_gcs(path)
 
 if __name__ == "__main__":
