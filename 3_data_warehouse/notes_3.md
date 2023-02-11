@@ -19,9 +19,9 @@
     - *Database deign*: denormalized databases for analysis
     - *Space requirements*: generally large due to aggregating large datasets
 
-|                    |                         OLTP                                | OLAP                                                               |
-|--------------------|-------------------------------------------------------------|--------------------------------------------------------------------|
-| *Purpose*          | control and run essential business  operations in real time | plan, solve problems, support decisions,  discover hidden insights |
-| Data updates       | short, fast updates initiated by user                       | plan, solve problems, support decisions, discover hidden insights  |
-| Database design    | normalized databases for efficiency                         | denormalized databases for analysis                                |
-| Space requirements | generally small if historical data is archived              | generally large due to aggregating large datasets                  |
+|                        | OLTP                                                        | OLAP                                                               |
+|------------------------|-------------------------------------------------------------|--------------------------------------------------------------------|
+| **Purpose**            | control and run essential business  operations in real time | plan, solve problems, support decisions,  discover hidden insights |
+| **Data updates**       | short, fast updates initiated by user                       | plan, solve problems, support decisions, discover hidden insights  |
+| **Database design**    | normalized databases for efficiency                         | denormalized databases for analysis                                |
+| **Space requirements** | generally small if historical data is archived              | generally large due to aggregating large datasets                  |
