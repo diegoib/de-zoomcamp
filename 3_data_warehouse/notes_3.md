@@ -121,3 +121,22 @@ Clustering over partitioning:
 - Partitioning results in a large number of partitions beyong the limits on partitioned tables
 - Partitioning results in our mutation operations modifying the majority of partitions in the table frequently
 
+### BigQuey Best Practices
+
+- For **cost reduction**:
+    - Avoid SELECT *, it is because BigQuey stores data in a column oriented structure, so it is better to specify he columns we need
+    - Price the queries before running them, it can be seen in the rigth upper corner
+    - Use clustered or partitioned tables
+    - Use streaming inserts with caution
+    - Materialize query results in stages
+
+- For **query performance**:
+    - Filter on partitioned columns
+    - Denormalizing data
+    - Use nested or repeated columns
+    - Use external data sources appropiately
+    - Don't use it, in case you want a high query performance
+    - Reduce data before using a JOIN
+    - Do not treat WITH clauses as prepared statements
+    - Avoid oversharding tables.
+
