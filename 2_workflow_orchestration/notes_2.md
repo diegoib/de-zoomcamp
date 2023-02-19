@@ -1,13 +1,20 @@
 # Workflow Orchestration
 
 ## Table of contents
-- [Basic concepts](#basic_-concepts) 
+- [Basic concepts](#basic-concepts) 
     - [Data Lake](#data-lake)
     - [ETL vs ELT](#etl-vs-elt)
-
+- [Workflow orchestration](#workflow-orchestration)
+    - [Introduction to workflow orchestration](#introduction-to-workflow-orchestration)
+    - [Introduction to Prefect](#introduction-to-prefect)
+    - [ETL with GCP and Prefect](#etl-with-gcp-and-prefect)
+    - [Parametrizing Flow and Deployments](#parametrizing-flow-and-deployments)
+    - [Schedules and Docker Storage with Infrastructure](#schedules-and-docker-storage-with-infrastructure)
 
 ## Basic concepts
+
 ### Data Lake
+
 A data lake is a central repository that holds big data from many sources. This data can be structured, semi-structured or unstructured. The idea is to ingest data as quickly as possible and make it available or accessible to other team members (data scientists, data analysts...).
 
 Generally, when ingesting data to the data lake, we would associate some sort of metadata for faster access.
@@ -57,6 +64,7 @@ _[Back to the top](#table-of-contents)_
 This time, the github repo link with the code is not contained in the DataTalkClub repo but in the [Prefect repo](https://github.com/discdiver/prefect-zoomcamp)
 
 ### Introduction to workflow orchestration
+
 *Workflow orchestration* means governing our data flow in a way that respects orchestration rules and our business logic. It lets us turn any code into a workflow that we can schedule, run and observe. 
 
 ![workflow orchestration](../images/02_01_workflow.png)
@@ -70,7 +78,10 @@ Some of the core features that a workflow orchestration tool needs to have are:
 - Ad-hoc runs
 - parametrization
 
+_[Back to the top](#table-of-contents)_
+
 ### Introduction to Prefect
+
 Prefect is a data flow automation platform, that allows to add observability and orchestration by using python, just to write code as workflows. It lets us run and monitor pipelines at scale.
 First, lets install the next requirements
 ```python
@@ -145,7 +156,10 @@ def ingest_data(table_name, df):
         df.to_sql(name=table_name, con=engine, if_exists='append')
 ```
 
+_[Back to the top](#table-of-contents)_
+
 ### ETL with GCP and Prefect
+
 The idea is we are going to create a python file with a main flow function that is going to call a number of other functions, that will be our task functions.
 First we need to create a *bucket* in GCP. For that we go to *Cloud Storage > Create*
 
@@ -183,6 +197,8 @@ Then, we can execute the script `etl_gcs_to_bg.py`.
 python etl_gcs_to_bg.py
 ```
 
+_[Back to the top](#table-of-contents)_
+
 ### Parametrizing Flow and Deployments
 
 For not having to run the etls manually from the terminal, we can do it and schedule in Prefect. Deployment in Prefect is a server-side concept that encapsulates a flow allowing it to be scheduled and triggered via the [API](https://docs.prefect.io/concepts/deployments/). Using a deployment, we are going to be able to have our flow code and a deployment definition, so Prefect now know that, for example, there is a flow that maybe runs on a schedule.  
@@ -213,6 +229,8 @@ prefect agent start --work-queue "deafult"
 ```
 
 We can create a `notification` for when the process finishes, even if it is successfully or not. For that we click on *Notificatons* in the left tab on th UI.
+
+_[Back to the top](#table-of-contents)_
 
 ### Schedules and Docker Storage with Infrastructure
 
@@ -315,3 +333,4 @@ prefect deployments run etl-parent-flow/docker-flow -p "months[1,2]"
 We have overwritten the parameter *months*.  
 And this time, the whole process is going to be running in a docker container and not locally as before.
 
+_[Back to the top](#table-of-contents)_
