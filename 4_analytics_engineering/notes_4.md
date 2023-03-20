@@ -88,11 +88,11 @@ _[Back to the top](#)_
 
 ## DBT
 
-[DBT](https://www.getdbt.com/) stands for data-build-tool. It is a transformation tool that allows anyone that knows SQL to deploy analytics code following software engineering best practices like modilarity, portability, CI/CD, and documentation.
+[DBT](https://www.getdbt.com/) stands for data-build-tool. It is a transformation tool that allows anyone that knows SQL to deploy analytics code following software engineering best practices like modularity, portability, CI/CD, and documentation.
 
 ![elt dbt](../images/04_02_elt_dbt.png)
 
-After we have done the extraction and loading of the data, we are going to have a lot of raw data in our data warehouse (¿data lake?). We need to transform this data to later expose it to our stakeholders and be able to perform analysis. That transformation is going to be done with **dbt**. It not only is going to help us transform our data in the data warehouse, but also it's going to introduce the good software practices by defining a *deployment workflow*: we are going to develop our models, we are going to test and documento them, and then we're going to have a deployment phase, where we are going to use version control and implement CI/CD as well.
+After we have done the extraction and loading of the data, we are going to have a lot of raw data in our data warehouse (¿data lake?). We need to transform this data to later expose it to our stakeholders and be able to perform analysis. That transformation is going to be done with **dbt**. It not only is going to help us transform our data in the data warehouse, but also it's going to introduce the good software practices by defining a *deployment workflow*: we are going to develop our models, we are going to test and document them, and then we're going to have a deployment phase, where we are going to use version control and implement CI/CD as well.
 
 ![dbt workflow](../images/04_03_dbt_workflow.png)
 
@@ -103,8 +103,8 @@ Each model is:
 
 ### How to use dbt?
 
-**dbt Core** is the essence of dbt: it is an open source project that allows the data transforamtion. 
-- this is the part of bdt that's going to build and run the project (.sql and .yml files)
+**dbt Core** is the essence of dbt: it is an open source project that allows the data transformation. 
+- this is the part of dbt that's going to build and run the project (.sql and .yml files)
 - includes SQL compilation logic, macros (functions) and database adapters
 - includes a CLI interface to run dbt commands locally
 - open source and free to use
@@ -118,3 +118,13 @@ There is another part from dbt which is **dbt Cloud**.
 
 ### How are we going to use dbt?
 
+First, we need to create a dbt project. bdt provides an *starter project* with all the basic folders and files. There are essentially two ways to use it:
+* with the **CLI**: After having installed dbt locally and setup the *profiles.yml*, run `dbt init` in the path we want to start the project to clone the starter project.
+* with **dbt cloud**: Afeter having set up the dbt cloud credentials (repo and dwh) we can start the project from the web-based IDE.
+
+Important files:
+- `dbt_project.yml`: In it we are going to be able to define global settings for our project, like name, profile (this is the setting thta is going to configure which databse is bdt going to be using to run this project)
+
+When we create the **starter project**, dbt is going to provide us the basic folders and files that we are going to need, which includes some example models. One of the important files for setting up our project is *dbt_project.yml*.
+
+We need to create a cloud account in this [link](https://www.getdbt.com/signup/), and follow this [instructions](https://docs.getdbt.com/docs/cloud/manage-access/set-up-bigquery-oauth) to set up BigQuery OAuth to connect to the data warehouse. We can also follow this [tutorial](https://github.com/DataTalksClub/data-engineering-zoomcamp/blob/main/week_4_analytics_engineering/dbt_cloud_setup.md) to set up the BigQuery service and credentials y GCP.
