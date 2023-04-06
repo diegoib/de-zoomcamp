@@ -118,9 +118,9 @@ There is another part from dbt which is **dbt Cloud**.
 
 ### How are we going to use dbt?
 
-First, we need to create a dbt project. bdt provides an *starter project* with all the basic folders and files. There are essentially two ways to use it:
+First, we need to create a dbt project. dbt provides an *starter project* with all the basic folders and files. There are essentially two ways to use it:
 * with the **CLI**: After having installed dbt locally and setup the *profiles.yml*, run `dbt init` in the path we want to start the project to clone the starter project.
-* with **dbt cloud**: Afeter having set up the dbt cloud credentials (repo and dwh) we can start the project from the web-based IDE.
+* with **dbt cloud**: After having set up the dbt cloud credentials (repo and dwh) we can start the project from the web-based IDE.
 
 Important files:
 - `dbt_project.yml`: In it we are going to be able to define global settings for our project, like name, profile (this is the setting thta is going to configure which databse is bdt going to be using to run this project)
