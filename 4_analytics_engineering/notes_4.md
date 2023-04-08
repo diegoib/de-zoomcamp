@@ -3,6 +3,29 @@
 ## Table of contents
 - [Basic concepts](#basic_-concepts) 
     - [Analytics Engineering Basics](#analytics-engineering-basics)
+    - [ETL vs ELT](#etl-vs-elt)
+    - [Kimballs Dimensional Modelling](#kimballs-dimensional-modelling)
+- [DBT](#dbt)
+    - [How to use dbt?](#how-to-use-dbt)
+    - [How are we going to use dbt?](#how-are-we-going-to-use-dbt)
+- [Anatomy of a dbt model](#anatomy-of-a-dbt-model)
+    - [The FROM clause](#the-from-clause)
+    - [Defining a source and creating a model](#defining-a-source-and-creating-a-model)
+    - [Macros](#macros)
+    - [Packages](#packages)
+    - [Variables](#variables)
+    - [Referencing older models in new models](#referencing-older-models-in-new-models)
+- [Testing and documenting dbt models](#testing-and-documenting-dbt-models)
+    - [Testing](#testing)
+    - [Documentation](#documentation)
+- [Deployment of a dbt project](#deployment-of-a-dbt-project)
+    - [Deployment basics](#deployment-basics)
+    - [Continuous Integration](#continuous-integration)
+    - [Deployment using dbt Cloud](#deployment-using-dbt-cloud)
+    - [Deployment using dbt Core (local)](#deployment-using-dbt-core-local)
+- [Data visualization](#data-visualization)
+    - [Looker Studio](#looker-studio)
+    - [Metabase](#metabase)
 
 
 > This notes include contents from this [repo](https://github.com/ziritrion/dataeng-zoomcamp/blob/main/notes/4_analytics.md)
@@ -40,6 +63,8 @@ The ***analytics engineer*** is the role that tries to fill the gap: it introduc
 
 This lesson focuses on the last 2 parts: Data Modeling and Data Presentation.
 
+_[Back to the top](#)_
+
 ### ETL vs ELT
 
 We saw the differences in chapter 2, but we revisit it.
@@ -48,6 +73,8 @@ We saw the differences in chapter 2, but we revisit it.
 
 The first approach, the ETL, is going to take longer to implement because first we have to transform that data. But this also means that we are going to have more stable and compliant data because it is clean.  
 On the other hand, the ELT, it is going to be faster and flexible, because we already have the data loaded in the data lake. This is also taking advantage of the cloud data warehousing that lowered the cost of storage and compute.
+
+_[Back to the top](#)_
 
 ### Kimballs' Dimensional Modelling
 
@@ -104,6 +131,8 @@ Each model is:
 - with a select statement and no DDL or DML
 - a file that dbt will compile and run in our DWH
 
+_[Back to the top](#)_
+
 ### How to use dbt?
 
 **dbt Core** is the essence of dbt: it is an open source project that allows the data transformation. 
@@ -119,6 +148,8 @@ There is another part from dbt which is **dbt Cloud**.
 - integrated documentation
 - free for individuals (one developer seat)
 
+_[Back to the top](#)_
+
 ### How are we going to use dbt?
 
 First, we need to create a dbt project. dbt provides an *starter project* with all the basic folders and files. There are essentially two ways to use it:
@@ -131,6 +162,8 @@ Important files:
 When we create the **starter project**, dbt is going to provide us the basic folders and files that we are going to need, which includes some example models. One of the important files for setting up our project is *dbt_project.yml*.
 
 We need to create a cloud account in this [link](https://www.getdbt.com/signup/), and follow this [instructions](https://docs.getdbt.com/docs/cloud/manage-access/set-up-bigquery-oauth) to set up BigQuery OAuth to connect to the data warehouse. We can also follow this [tutorial](https://github.com/DataTalksClub/data-engineering-zoomcamp/blob/main/week_4_analytics_engineering/dbt_cloud_setup.md) to set up the BigQuery service and credentials y GCP.
+
+_[Back to the top](#)_
 
 
 ## Anatomy of a dbt model
@@ -172,7 +205,9 @@ After the code is compiled, dbt will run the compiled code in the Data Warehouse
 
 Additional model properties are stored in YAML files. Traditionally, these files were named `schema.yml` but later versions of dbt do not enforce this as it could lead to confusion.
 
-## The FROM clause
+_[Back to the top](#)_
+
+### The FROM clause
 
 The `FROM` clause within a `SELECT` statement defines the _sources_ of the data to be used.
 
@@ -249,7 +284,9 @@ WITH green_data AS (
 * The `ref()` function translates our references table into the full reference, using the `database.schema.table` structure.
 * If we were to run this code in our production environment, dbt would automatically resolve the reference to make ir point to our production schema.
 
-## Defining a source and creating a model
+_[Back to the top](#)_
+
+### Defining a source and creating a model
 
 We will now create our first model.
 
@@ -289,7 +326,9 @@ The advantage of having the properties in a separate file is that we can easily 
 
 You may know run the model with the `dbt run` command, either locally or from dbt Cloud.
 
-## Macros
+_[Back to the top](#)_
+
+### Macros
 
 ***Macros*** are pieces of code in Jinja that can be reused, similar to functions in other languages.
 
@@ -358,7 +397,9 @@ where vendorid is not null
 ```
 * The macro is replaced by the code contained within the macro definition as well as any variables that we may have passed to the macro parameters.
 
-## Packages
+_[Back to the top](#)_
+
+### Packages
 
 Macros can be exported to ***packages***, similarly to how classes and functions can be exported to libraries in other languages. Packages contain standalone dbt projects with models and macros that tackle a specific problem area.
 
@@ -382,7 +423,9 @@ select
 ```
 * The `surrogate_key()` macro generates a hashed [surrogate key](https://www.geeksforgeeks.org/surrogate-key-in-dbms/) with the specified fields in the arguments.
 
-## Variables
+_[Back to the top](#)_
+
+### Variables
 
 Like most other programming languages, ***variables*** can be defined and used across our project.
 
@@ -408,7 +451,9 @@ Variables can be used with the `var()` macro. For example:
 * In this example, the default value for `is_test_run` is `true`; in the absence of a variable definition either on the `dbt_project.yml` file or when running the project, then `is_test_run` would be `true`.
 * Since we passed the value `false` when runnning `dbt build`, then the `if` statement would evaluate to `false` and the code within would not run.
 
-## Referencing older models in new models
+_[Back to the top](#)_
+
+### Referencing older models in new models
 
 >Note: you will need the [Taxi Zone Lookup Table seed](https://s3.amazonaws.com/nyc-tlc/misc/taxi+_zone_lookup.csv), the [staging models and schema](https://github.com/DataTalksClub/data-engineering-zoomcamp/tree/main/week_4_analytics_engineering/taxi_rides_ny/models/staging) and the [macro files](https://github.com/DataTalksClub/data-engineering-zoomcamp/tree/main/week_4_analytics_engineering/taxi_rides_ny/macros) for this section.
 
@@ -443,11 +488,12 @@ You may check out these more complex "core" models [in this link](https://github
 
 _[Back to the top](#)_
 
-# Testing and documenting dbt models
+
+## Testing and documenting dbt models
 
 Testing and documenting are not required steps to successfully run models, but they are expected in any professional setting.
 
-## Testing
+### Testing
 
 Tests in dbt are ***assumptions*** that we make about our data.
 
@@ -484,7 +530,9 @@ from "my_project"."dbt_dev"."stg_yellow_tripdata"
 
 You may run tests with the `dbt test` command.
 
-## Documentation
+_[Back to the top](#)_
+
+### Documentation
 
 dbt also provides a way to generate documentation for your dbt project and render it as a website.
 
@@ -505,11 +553,12 @@ dbt docs can be generated on the cloud or locally with `dbt docs generate`, and 
 
 _[Back to the top](#)_
 
-# Deployment of a dbt project
+
+## Deployment of a dbt project
 
 _Video sources: [1](https://www.youtube.com/watch?v=rjf6yZNGX8I&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=40)_, [2](https://www.youtube.com/watch?v=Cs9Od1pcrzM&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=41)
 
-## Deployment basics
+### Deployment basics
 
 If you remember from the [beginning of this lesson](#what-is-dbt), the goal of dbt is to introduce good software engineering practices by defining a ***deployment workflow***.
 
@@ -534,7 +583,9 @@ dbt projects are usually deployed in the form of ***jobs***:
 * A job may also be used to generate documentation, which may be viewed under the run information.
 * If the `dbt source freshness` command was run, the results can also be viewed at the end of a job.
 
-## Continuous Integration
+_[Back to the top](#)_
+
+### Continuous Integration
 
 Another good software engineering practice that dbt enables is ***Continuous Integration*** (CI): the practice of regularly merging development branches into a central repository, after which automated builds and tests are run. The goal of CI is to reduce adding bugs to the production code and maintain a more stable project.
 
@@ -544,7 +595,9 @@ dbt makes use of GitHub/GitLab's Pull Requests to enable CI via [webhooks](https
 
 CI jobs can also be scheduled with the dbt Cloud scheduler, Airflow, cron and a number of additional tools.
 
-## Deployment using dbt Cloud
+_[Back to the top](#)_
+
+### Deployment using dbt Cloud
 
 In dbt Cloud, you might have noticed that after the first commit, the `main` branch becomes read-only and forces us to create a new branch if we want to keep developing. dbt Cloud does this to enforce us to open PRs for CI purposes rather than allowing merging to `main` straight away.
 
@@ -564,7 +617,9 @@ You can access the run and check the current state of it as well as the logs. Af
 
 Under _Account settings_ > _Projects_, you may edit the project in order to modify the _Documentation_ field under _Artifacts_; you should see a drop down menu which should contain the job we created which generates the docs. After saving the changes and reloading the dbt Cloud website, you should now have a _Documentation_ section in the sidebar.
 
-## Deployment using dbt Core (local)
+_[Back to the top](#)_
+
+### Deployment using dbt Core (local)
 
 In dbt Core, environments are defined in the `profiles.yml` file. Assuming you've defined a ***target*** (an environment) called `prod`, you may build your project agains it using the `dbt build -t prod` command.
 
@@ -572,13 +627,14 @@ You may learn more about how to set up the `profiles.yml` file [in this link](ht
 
 _[Back to the top](#)_
 
-# Data visualization
+
+## Data visualization
 
 _Video sources: [1](https://www.youtube.com/watch?v=39nLTs74A3E&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=42)_, [2](https://www.youtube.com/watch?v=BnLkrA7a6gM&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=43)
 
 After creating our models, transforming the data and deploying the models, we will now ***visualize*** the data.
 
-## Looker Studio
+### Looker Studio
 
 [Looker Studio](https://lookerstudio.google.com/) (Looker) is an online tool for converting data into ***reports*** and ***dashboards***.
 
@@ -592,11 +648,11 @@ We will now create a new report by clicking on the _Create report_ button at the
 
 Add the first widget to the report. We want to show the amount of trips per day, so we'll choose a _Time Series Chart_. Looker will pick up the most likely dimensions for the chart, which for `fact_trips` happens to be `pickup_datetime`, but we need to add an additional dimension for breaking down the data, so we will drag an drop `service_type` into the widget sidebar, which should update with 2 lines, one for yellow taxi and another one for green taxi data. You may also move and resize the chart.
 
-![time series chart](images/04_04.png)
+![time series chart](../images/04_04.png)
 
 You may notice that the vast majority of trips are concentrated in a small interval; this is due to dirty data which has bogus values for `pickup_datetime`. We can filter out these bogus values by adding a _Date Range Control_, which we can drag and drop anywhere in the report, and then set the start date to January 1st 2019 and the end date to December 31st 2020.
 
-![date range control](images/04_05.png)
+![date range control](../images/04_05.png)
 
 >Note: Controls affect all the Charts in the report.
 
@@ -623,11 +679,13 @@ Our bar chart will now display trips per month but we still want to discriminate
 
 Finally, we will add a _Drop-Down List Control_ and drag the `service_type` dimension to _Control field_. The drop-down control will now allow us to choose yellow, green or both taxi types. We will also rename the report to _Trips analysis years 2019-2020_.
 
-![final report](images/04_06.png)
+![final report](../images/04_06.png)
 
 You may click on the _View_ button at the top to check how the shared report will look to the stakeholders. Sharing the report works similarly to Google Drive document sharing.
 
-## Metabase
+_[Back to the top](#)_
+
+### Metabase
 
 Looker cannot be used for local databases. If you're developing locally, you may use the [Open Source Edition](https://www.metabase.com/start/oss/) of [Metabase](https://www.metabase.com/).
 
