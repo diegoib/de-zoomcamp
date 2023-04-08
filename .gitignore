@@ -3,3 +3,6 @@ data/
 *checkpoint.ipynb
 .gc/
 aclaraciones.txt
+4_analytics_engineering/hw/target/
+4_analytics_engineering/hw/dbt_packages/
+4_analytics_engineering/hw/logs/
