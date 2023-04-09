@@ -49,3 +49,10 @@ A tipical machine learning workflow involving Saprk would be:
 
 ![spark workflow](../images/05_01_spark_workflow.png)
 
+### Installing Spark
+
+To install Spark on a Linux machine (in my case a google virtual machine) follow this [tutorial](https://github.com/DataTalksClub/data-engineering-zoomcamp/blob/main/week_5_batch_processing/setup/linux.md). We will need to install Java first, and then Spark, and export some variables to everything be able to work fine.
+
+###
+
+
