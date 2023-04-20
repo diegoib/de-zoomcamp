@@ -1189,15 +1189,15 @@ You may access Dataproc from the GCP dashboard and typing `dataproc` on the sear
 
 In the images below you may find some example values for creating a simple cluster. Give it a name of your choosing and choose the same region as your bucket.
 
-![creating a cluster](images/05_01.png)
+![creating a cluster](../images/05_01.png)
 
 We would normally choose a `standard` cluster, but you may choose `single node` if you just want to experiment and not run any jobs.
 
-![creating a cluster](images/05_02.png)
+![creating a cluster](../images/05_02.png)
 
 Optionally, you may install additional components but we won't be covering them in this lesson.
 
-![creating a cluster](images/05_03.png)
+![creating a cluster](../images/05_03.png)
 
 You may leave all other optional settings with their default values. After you click on `Create`, it will take a few seconds to create the cluster. You may notice an extra VM instance under VMs; that's the Spark instance.
 
@@ -1207,7 +1207,7 @@ In a [previous section](#configuring-spark-with-the-gcs-connector) we saw how to
 
 In Dataproc's _Clusters_ page, choose your cluster and un the _Cluster details_ page, click on `Submit job`. Under _Job type_ choose `PySpark`, then in _Main Python file_ write the path to your script (you may upload the script to your bucket and then copy the URL).
 
-![setting up a job](images/05_04.png)
+![setting up a job](../images/05_04.png)
 
 Make sure that your script does not specify the `master` cluster! Your script should take the connection details from Dataproc; make sure it looks something like this:
 
@@ -1221,7 +1221,7 @@ You may use [this script](https://github.com/DataTalksClub/data-engineering-zoom
 
 We also need to specify arguments, in a similar fashion to what we saw [in the previous section](#parametrizing-our-scripts-for-spark), but using the URL's for our folders rather than the local paths:
 
-![setting up a job](images/05_05.png)
+![setting up a job](../images/05_05.png)
 
 Now press `Submit`. Sadly there is no easy way to access the Spark dashboard but you can check the status of the job from the `Job details` page.
 
@@ -1246,4 +1246,12 @@ gcloud dataproc jobs submit pyspark \
 You may find more details on how to run jobs [in the official docs](https://cloud.google.com/dataproc/docs/guides/submit-job).
 
 _[Back to the top](#)_
+
+
+## Connecting Spark to Big Query
+
+_[Video source](https://www.youtube.com/watch?v=HIm2BOj8C0Q&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=57)_
+
+We can find the instructions in this [link](https://cloud.google.com/dataproc/docs/tutorials/bigquery-connector-spark-example?hl=es-419#pyspark).
+
 
