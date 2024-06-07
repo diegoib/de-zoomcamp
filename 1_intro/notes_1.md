@@ -539,7 +539,7 @@ First, we need to create the `ssh keys`. If we are using `git bash` (windows), i
       Host HOST_ALIAS
         HostName IP
         User USERNAME
-        IdentifyFile SSH_KEY_PATH
+        IdentityFile SSH_KEY_PATH
       ```
       With this configuration using the proper values, we can connect to the VM using:
       ```bash
