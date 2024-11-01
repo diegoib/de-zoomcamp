@@ -322,7 +322,7 @@ GCP generally works in terms of projects. You can create a new project or use an
       ```
   1. Set a environment variable to point to the downloaded GCP aut-keys, and login:
       ```bash
-      export GOOGLE_APPLICATION_CREDENTIALS="<path/yo/your/service-account-authkeys>.json"
+      export GOOGLE_APPLICATION_CREDENTIALS="<path/to/your/service-account-authkeys>.json"
 
       gcloud auth application-default login
       ```
